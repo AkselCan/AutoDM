@@ -1,0 +1,22 @@
+# Ignore top-level data folders
+florida/
+georgia/
+oklahoma/
+texas/
+
+# Ignore CSVs and large data files anywhere (uncomment if needed)
+# *.csv
+# *.csv.gz
+
+# Jupyter Notebook checkpoints and outputs
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Temporary files created by editors / OS
+Thumbs.db
+desktop.ini
+~$*
+
+# Ignore OneDrive/Office temp files
+~*.tmp
+
