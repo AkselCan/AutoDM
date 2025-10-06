@@ -20,3 +20,14 @@ desktop.ini
 # Ignore OneDrive/Office temp files
 ~*.tmp
 
+# Ignore Protege application and extracted folders
+# Protect common Protege distribution folders and executables from being committed
+Protege/
+Protege-*/
+Protege-**/
+# Ignore common Protege launch and JVM files (optional, kept generic)
+*.exe
+*.bat
+*.l4j.ini
+
+
