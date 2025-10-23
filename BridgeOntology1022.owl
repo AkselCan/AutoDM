@@ -1,0 +1,841 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://www.w3.org/2002/07/owl"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <Ontology/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.w3.org/2001/XMLSchema#date -->
+
+    <rdfs:Datatype rdf:about="http://www.w3.org/2001/XMLSchema#date"/>
+    
+
+
+    <!-- http://www.w3.org/2001/XMLSchema#gYear -->
+
+    <rdfs:Datatype rdf:about="http://www.w3.org/2001/XMLSchema#gYear"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#hasElement -->
+
+    <ObjectProperty rdf:about="http://www.bridge-management-ontology.org/bmo#hasElement">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+    </ObjectProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#isInfluencedBy -->
+
+    <ObjectProperty rdf:about="http://www.bridge-management-ontology.org/bmo#isInfluencedBy">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Asset"/>
+        <rdfs:range rdf:resource="http://www.bridge-management-ontology.org/bmo#ExternalFactor"/>
+    </ObjectProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#undergoesEvent -->
+
+    <ObjectProperty rdf:about="http://www.bridge-management-ontology.org/bmo#undergoesEvent">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Asset"/>
+        <rdfs:range rdf:resource="http://www.bridge-management-ontology.org/bmo#Event"/>
+    </ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#condition_state_1 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#condition_state_1">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CONDITION_STATE_1</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#condition_state_2 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#condition_state_2">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CONDITION_STATE_2</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#condition_state_3 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#condition_state_3">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CONDITION_STATE_3</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#condition_state_4 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#condition_state_4">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CONDITION_STATE_4</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#cs_percent_1 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#cs_percent_1">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CS_PERCENT_1</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#cs_percent_2 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#cs_percent_2">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CS_PERCENT_2</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#cs_percent_3 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#cs_percent_3">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CS_PERCENT_3</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#cs_percent_4 -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#cs_percent_4">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>CS_PERCENT_4</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#element_category -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#element_category">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>ELEMENT_CATEGORY</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#element_name -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#element_name">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>ELEMENT_NAME</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#element_unit -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#element_unit">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>ELEMENT_UNIT</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#hi -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#hi">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>HI</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_104HighwaySystemOfInventoryRoute -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_104HighwaySystemOfInventoryRoute">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_104 - Highway System of Inventory Route</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_106YearReconstructed -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_106YearReconstructed">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#gYear"/>
+        <rdfs:label>NBI_106 - Year Reconstructed</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_107DeckStructureTypeCode -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_107DeckStructureTypeCode">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_107 - Deck Structure Type Code</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_108aWearingSurfaceTypeCode -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_108aWearingSurfaceTypeCode">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_108A - Wearing Surface Type Code</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_108bMembraneTypeCode -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_108bMembraneTypeCode">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_108B - Membrane Type Code</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_109AverageDailyTruckTraffic -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_109AverageDailyTruckTraffic">
+        <rdfs:subPropertyOf rdf:resource="http://www.bridge-management-ontology.org/bmo#nbi_112NbisBridgeLength"/>
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#TrafficProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_109 - Average Daily Truck Traffic (%)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_112NbisBridgeLength -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_112NbisBridgeLength">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_112 - NBIS Bridge Length</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_1StateCode -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_1StateCode">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_1 - State Code</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_21MaintenanceResponsibility -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_21MaintenanceResponsibility">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_21 - Maintenance Responsibility</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_26FunctionalClassificationOfInventoryRoute -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_26FunctionalClassificationOfInventoryRoute">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_26 - Functional Classification of Inventory Route</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_27YearBuilt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_27YearBuilt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#gYear"/>
+        <rdfs:label>NBI_27 - Year Built</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_29AverageDailyTraffic -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_29AverageDailyTraffic">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#TrafficProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_29 - Average Daily Traffic</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_30YearOfAverageDailyTraffic -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_30YearOfAverageDailyTraffic">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#TrafficProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#gYear"/>
+        <rdfs:label>NBI_30 - Year of Average Daily Traffic</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_31DesignLoad -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_31DesignLoad">
+        <rdfs:subPropertyOf rdf:resource="http://www.bridge-management-ontology.org/bmo#nbi_37HistoricalSignificanceCode"/>
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_31 - Design Load</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_32ApproachRoadwayWidthFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_32ApproachRoadwayWidthFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_32 - Approach Roadway Width (ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_37HistoricalSignificanceCode -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_37HistoricalSignificanceCode">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_37 - Historical Significance Code</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_3CountyCode -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_3CountyCode">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_3 - County Code</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_43aMainSpanMaterial -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_43aMainSpanMaterial">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_43A - Main Span Material</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_44aApproachSpansMaterial -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_44aApproachSpansMaterial">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_44A - Approach Spans Material</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_46NumberOfApproachSpans -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_46NumberOfApproachSpans">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_46 - Number of Approach Spans</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_48LengthOfMaximumSpanFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_48LengthOfMaximumSpanFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_48 - Length of Maximum Span (ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_49StructureLengthFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_49StructureLengthFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_49 - Structure Length (ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_4PlaceCode -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_4PlaceCode">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_4 - Place Code</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_51BridgeRoadwayWidthCurbToCurbFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_51BridgeRoadwayWidthCurbToCurbFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_51 - Bridge Roadway Width - Curb to Curb (ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_52DeckWidthOutToOutFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_52DeckWidthOutToOutFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_52 - Deck Width - Out to Out (ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_76LengthOfStructureImprovementFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_76LengthOfStructureImprovementFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#MaintenanceEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_76 - Length of Structure Improvement (ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_90InspectionDate -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_90InspectionDate">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#InspectionEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:label>NBI_90 - Inspection Date</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_91DesignatedInspectionFrequency -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_91DesignatedInspectionFrequency">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#InspectionEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_91 - Designated Inspection Frequency</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_92aFractureCriticalDetails -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_92aFractureCriticalDetails">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#InspectionEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_92A - Fracture Critical Details</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_92bUnderwaterInspection -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_92bUnderwaterInspection">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#InspectionEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_92B - Underwater Inspection</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_92cOtherSpecialInspection -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_92cOtherSpecialInspection">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#InspectionEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_92C - Other Special Inspection</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_94BridgeImprovementCost -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_94BridgeImprovementCost">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#MaintenanceEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_94 - Bridge Improvement Cost</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_95RoadwayImprovementCost -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_95RoadwayImprovementCost">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#MaintenanceEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_95 - Roadway Improvement Cost</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_9AdministrativeArea -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_9AdministrativeArea">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_9 - Administrative Area</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_avgDailyMaxTemp -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_avgDailyMaxTemp">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_Avg Daily Max Temp</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_avgDailyMinTemp -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_avgDailyMinTemp">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_Avg Daily Min Temp</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_avgDailyWindSpeed -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_avgDailyWindSpeed">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_Avg Daily Wind Speed</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_avgMonthlyMaxTemp -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_avgMonthlyMaxTemp">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_Avg Monthly Max Temp</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_avgMonthlyMinTemp -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_avgMonthlyMinTemp">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_Avg Monthly Min Temp</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_bridgeAgeYr -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_bridgeAgeYr">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_Bridge Age (yr)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_cat10BridgeCondition -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_cat10BridgeCondition">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#InspectionEvent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_CAT10 - Bridge Condition</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_cat29DeckAreaSqFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_cat29DeckAreaSqFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_CAT29 - Deck Area (sq. ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_freezeThawCycles -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_freezeThawCycles">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_Freeze Thaw Cycles</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_numberOfDaysWithMeasurablePrecipitation -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_numberOfDaysWithMeasurablePrecipitation">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_Number of Days with Measurable Precipitation</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_numberOfDaysWithTemperatureBelow0C -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_numberOfDaysWithTemperatureBelow0C">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_Number of Days with Temperature Below 0?C</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_numberOfSnowfallDays -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_numberOfSnowfallDays">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label>NBI_Number of Snowfall Days</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_prevailingWindDirection -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_prevailingWindDirection">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>NBI_Prevailing Wind Direction</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_timeOfWetness -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_timeOfWetness">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_Time of Wetness</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_totalPrecipitation -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_totalPrecipitation">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_Total Precipitation</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#owner_agency -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#owner_agency">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>OWNER_AGENCY</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#parent_element_number -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#parent_element_number">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>PARENT_ELEMENT_NUMBER</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#structure_number -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#structure_number">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>STRUCTURE_NUMBER</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#total_quantity -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#total_quantity">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#BridgeElement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>TOTAL_QUANTITY</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#nbi_10InventoryRoute,MinimumVerticalClearanceFt -->
+
+    <DatatypeProperty rdf:about="http://www.bridge-management-ontology.org/bmo#nbi_10InventoryRoute,MinimumVerticalClearanceFt">
+        <rdfs:domain rdf:resource="http://www.bridge-management-ontology.org/bmo#Bridge"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:label>NBI_10 - Inventory Route, Minimum Vertical Clearance (ft.)</rdfs:label>
+    </DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#Asset -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#Asset">
+        <rdfs:comment>A physical entity that is owned and has value, such as a bridge or its components.</rdfs:comment>
+        <rdfs:label>Asset</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#Bridge -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#Bridge">
+        <rdfs:subClassOf rdf:resource="http://www.bridge-management-ontology.org/bmo#Asset"/>
+        <rdfs:label>Bridge</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#BridgeElement -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#BridgeElement">
+        <rdfs:subClassOf rdf:resource="http://www.bridge-management-ontology.org/bmo#Asset"/>
+        <rdfs:label>Bridge Element</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#EnvironmentalExposure">
+        <rdfs:subClassOf rdf:resource="http://www.bridge-management-ontology.org/bmo#ExternalFactor"/>
+        <rdfs:label>Environmental Exposure</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#Event -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#Event">
+        <rdfs:comment>An occurrence that happens at a specific point in time related to an asset.</rdfs:comment>
+        <rdfs:label>Event</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#ExternalFactor -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#ExternalFactor">
+        <rdfs:comment>An external condition or influence that affects an asset.</rdfs:comment>
+        <rdfs:label>ExternalFactor</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#InspectionEvent -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#InspectionEvent">
+        <rdfs:subClassOf rdf:resource="http://www.bridge-management-ontology.org/bmo#Event"/>
+        <rdfs:label>Inspection Event</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#MaintenanceEvent -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#MaintenanceEvent">
+        <rdfs:subClassOf rdf:resource="http://www.bridge-management-ontology.org/bmo#Event"/>
+        <rdfs:label>Maintenance Event</rdfs:label>
+    </Class>
+    
+
+
+    <!-- http://www.bridge-management-ontology.org/bmo#TrafficProfile -->
+
+    <Class rdf:about="http://www.bridge-management-ontology.org/bmo#TrafficProfile">
+        <rdfs:subClassOf rdf:resource="http://www.bridge-management-ontology.org/bmo#ExternalFactor"/>
+        <rdfs:label>Traffic Profile</rdfs:label>
+    </Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
+
