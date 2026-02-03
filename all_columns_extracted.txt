@@ -1,0 +1,32 @@
+ALL COLUMNS EXTRACTED FROM NEO4J:
+======================================================================
+
+1. truckPercentage
+2. healthIndex
+3. mainSpanDesign
+4. latitude
+5. deckArea
+6. structureNumber
+7. yearBuilt
+8. adtt
+9. ownerAgency
+10. adt
+11. deckWidth
+12. currentDeckCR
+13. bridgeAge
+14. currentSubCR
+15. adtl
+16. numLanes
+17. currentSuperCR
+18. mainSpanMaterial
+19. lastInspectionDate
+20. numMainSpans
+21. latestStructureNumber
+22. structureLength
+23. longitude
+24. climate_severity
+25. climate_zoneID
+26. climate_description
+27. traffic_intensity
+28. traffic_patternID
+29. traffic_description

@@ -1,0 +1,15 @@
+{
+  "num_nodes": 4696,
+  "num_edges": 795888,
+  "num_features": 52,
+  "target_column": "currentDeckCR",
+  "num_train": 3287,
+  "num_val": 704,
+  "num_test": 705,
+  "num_numeric_features": 16,
+  "num_categorical_features": 9,
+  "label_distribution": {
+    "critical": 360,
+    "good": 4336
+  }
+}
