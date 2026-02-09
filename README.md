@@ -2,6 +2,15 @@
 
 This repository contains current progress in data analysis, and references for ongoing research.
 
+## Repository Structure
+
+- **data/**: exported graph data, feature lists, and metadata snapshots
+- **models/**: trained model weights
+- **notebooks/**: exploratory and ontology notebooks
+- **ontology/**: OWL ontology artifacts
+- **results/**: training outputs and plots
+- **scripts/**: data extraction, conversion, training, and dashboard utilities
+
 ## Resources
 
 - **Data & Working Files**  
