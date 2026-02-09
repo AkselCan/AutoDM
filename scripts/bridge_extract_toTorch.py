@@ -3,11 +3,17 @@ Convert comprehensive bridge graph data to PyTorch Geometric format
 Use this on your machine with working PyTorch
 """
 
+import json
 import pickle
+from pathlib import Path
+
 import numpy as np
 import torch
 from torch_geometric.data import Data
-import json
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 print("="*70)
 print("CONVERTING COMPREHENSIVE GRAPH DATA TO PYTORCH")
@@ -15,8 +21,9 @@ print("="*70)
 
 try:
     # Load the comprehensive data
-    print("\n📦 Loading comprehensive_bridge_graph.pkl...")
-    with open('comprehensive_bridge_graph.pkl', 'rb') as f:
+    source_path = DATA_DIR / "comprehensive_bridge_graph.pkl"
+    print(f"\n📦 Loading {source_path}...")
+    with open(source_path, 'rb') as f:
         graph_data = pickle.load(f)
     
     print("✓ Data loaded successfully")
@@ -76,7 +83,8 @@ try:
     
     # Save
     print("\n💾 Saving PyTorch format...")
-    torch.save(data, 'comprehensive_bridge_graph.pt')
+    target_path = DATA_DIR / "comprehensive_bridge_graph.pt"
+    torch.save(data, target_path)
     
     # Also save a separate metadata file
     metadata = {
@@ -90,7 +98,8 @@ try:
         'test_size': int(test_mask.sum())
     }
     
-    with open('pytorch_graph_info.json', 'w') as f:
+    metadata_path = DATA_DIR / "pytorch_graph_info.json"
+    with open(metadata_path, 'w') as f:
         json.dump(metadata, f, indent=2)
     
     print("\n" + "="*70)
@@ -98,8 +107,8 @@ try:
     print("="*70)
     
     print("\n📁 Created Files:")
-    print("  - comprehensive_bridge_graph.pt (PyTorch Geometric Data)")
-    print("  - pytorch_graph_info.json (metadata)")
+    print(f"  - {target_path} (PyTorch Geometric Data)")
+    print(f"  - {metadata_path} (metadata)")
     
     print("\n📊 PyTorch Graph Statistics:")
     print(f"  Nodes: {data.num_nodes:,}")
@@ -113,13 +122,13 @@ try:
     print("\n💡 Quick Start:")
     print("  import torch")
     print("  from torch_geometric.data import Data")
-    print("  data = torch.load('comprehensive_bridge_graph.pt')")
+    print(f"  data = torch.load('{target_path}')")
     print("  print(f'Loaded {data.num_nodes} bridges with {data.num_node_features} features')")
     
 except FileNotFoundError:
     print("\n❌ ERROR: comprehensive_bridge_graph.pkl not found!")
     print("   Make sure you ran comprehensive_bridge_extract.py first")
-    print("   and transferred the .pkl file to this machine")
+    print(f"   and transferred the .pkl file to {DATA_DIR}")
     
 except Exception as e:
     print(f"\n❌ ERROR: {e}")

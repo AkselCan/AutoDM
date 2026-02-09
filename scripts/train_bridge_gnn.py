@@ -7,14 +7,16 @@ This script trains a GCN model to predict bridge criticality using:
 - Spatial relationships between bridges (NEAR edges)
 """
 
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, GATConv
+import torch.serialization
 from torch_geometric.data import Data
 from torch_geometric.data.data import DataEdgeAttr
-import torch.serialization
-import numpy as np
-import matplotlib.pyplot as plt
+from torch_geometric.nn import GATConv, GCNConv
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report, roc_auc_score, roc_curve
@@ -22,6 +24,14 @@ from sklearn.metrics import (
 import json
 import time
 from datetime import datetime
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+MODELS_DIR = BASE_DIR / "models"
+RESULTS_DIR = BASE_DIR / "results"
+
+MODELS_DIR.mkdir(parents=True, exist_ok=True)
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 print("="*70)
 print("BRIDGE CRITICALITY PREDICTION - GNN TRAINING")
@@ -47,8 +57,9 @@ if CONFIG['device'] == 'cuda':
 
 # ==================== LOAD DATA ====================
 print("\n📦 Loading graph data...")
+data_path = DATA_DIR / "comprehensive_bridge_graph.pt"
 with torch.serialization.safe_globals([DataEdgeAttr]):
-    data = torch.load('comprehensive_bridge_graph.pt', weights_only=False)
+    data = torch.load(data_path, weights_only=False)
 
 print(f"\n📊 Dataset Statistics:")
 print(f"   Nodes (bridges): {data.num_nodes:,}")
@@ -310,7 +321,7 @@ for epoch in range(1, CONFIG['num_epochs'] + 1):
             'optimizer_state_dict': optimizer.state_dict(),
             'val_f1': best_val_f1,
             'config': CONFIG
-        }, 'best_bridge_gnn_model.pt')
+        }, MODELS_DIR / 'best_bridge_gnn_model.pt')
     else:
         patience_counter += 1
     
@@ -330,7 +341,7 @@ print("FINAL EVALUATION ON TEST SET")
 print("="*70)
 
 # Load best model
-checkpoint = torch.load('best_bridge_gnn_model.pt')
+checkpoint = torch.load(MODELS_DIR / 'best_bridge_gnn_model.pt')
 model.load_state_dict(checkpoint['model_state_dict'])
 
 # Evaluate on all sets
@@ -382,10 +393,11 @@ results = {
     'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 }
 
-with open('training_results.json', 'w') as f:
+results_json = RESULTS_DIR / "training_results.json"
+with open(results_json, 'w') as f:
     json.dump(results, f, indent=2)
 
-print("   ✓ Saved training_results.json")
+print(f"   ✓ Saved {results_json}")
 
 # ==================== VISUALIZATIONS ====================
 print("\n📈 Creating visualizations...")
@@ -440,16 +452,17 @@ axes[1, 1].legend()
 axes[1, 1].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('training_results.png', dpi=300, bbox_inches='tight')
-print("   ✓ Saved training_results.png")
+results_plot = RESULTS_DIR / "training_results.png"
+plt.savefig(results_plot, dpi=300, bbox_inches='tight')
+print(f"   ✓ Saved {results_plot}")
 
 print("\n" + "="*70)
 print("✅ TRAINING AND EVALUATION COMPLETE!")
 print("="*70)
 print("\n📁 Generated Files:")
-print("   - best_bridge_gnn_model.pt (trained model)")
-print("   - training_results.json (metrics)")
-print("   - training_results.png (visualizations)")
+print(f"   - {MODELS_DIR / 'best_bridge_gnn_model.pt'} (trained model)")
+print(f"   - {results_json} (metrics)")
+print(f"   - {results_plot} (visualizations)")
 print("\n🎯 Next Steps:")
 print("   1. Analyze feature importance")
 print("   2. Generate predictions for all bridges")

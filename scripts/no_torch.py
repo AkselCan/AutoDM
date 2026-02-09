@@ -1,12 +1,18 @@
-import pandas as pd
-import numpy as np
-from neo4j import GraphDatabase
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
-import pickle
 import json
+import pickle
+from pathlib import Path
 import warnings
+
+import numpy as np
+import pandas as pd
+from neo4j import GraphDatabase
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
 warnings.filterwarnings('ignore')
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # --- NEO4J CONFIGURATION ---
 NEO4J_URI = "bolt://localhost:7687"
@@ -429,17 +435,17 @@ def main():
         # 9. Save everything
         print("\n💾 Saving data...")
         
-        with open('comprehensive_bridge_graph.pkl', 'wb') as f:
+        with open(DATA_DIR / 'comprehensive_bridge_graph.pkl', 'wb') as f:
             pickle.dump(graph_data, f)
-        print("  ✓ Saved comprehensive_bridge_graph.pkl")
+        print(f"  ✓ Saved {DATA_DIR / 'comprehensive_bridge_graph.pkl'}")
         
         # Save feature mapping
         feature_df = pd.DataFrame({
             'index': range(len(feature_names)),
             'feature_name': feature_names
         })
-        feature_df.to_csv('all_feature_names.csv', index=False)
-        print("  ✓ Saved all_feature_names.csv")
+        feature_df.to_csv(DATA_DIR / 'all_feature_names.csv', index=False)
+        print(f"  ✓ Saved {DATA_DIR / 'all_feature_names.csv'}")
         
         # Save metadata
         metadata = {
@@ -458,17 +464,17 @@ def main():
             }
         }
         
-        with open('comprehensive_metadata.json', 'w') as f:
+        with open(DATA_DIR / 'comprehensive_metadata.json', 'w') as f:
             json.dump(metadata, f, indent=2)
-        print("  ✓ Saved comprehensive_metadata.json")
+        print(f"  ✓ Saved {DATA_DIR / 'comprehensive_metadata.json'}")
         
         # Save original column list
-        with open('all_columns_extracted.txt', 'w') as f:
+        with open(DATA_DIR / 'all_columns_extracted.txt', 'w') as f:
             f.write("ALL COLUMNS EXTRACTED FROM NEO4J:\n")
             f.write("="*70 + "\n\n")
             for i, col in enumerate(df.columns, 1):
                 f.write(f"{i}. {col}\n")
-        print("  ✓ Saved all_columns_extracted.txt")
+        print(f"  ✓ Saved {DATA_DIR / 'all_columns_extracted.txt'}")
         
         # 10. Print summary
         print("\n" + "="*70)
@@ -485,13 +491,13 @@ def main():
         print(f"  Average Degree: {len(edge_list)/num_nodes:.2f}")
         
         print("\n📁 Files Created:")
-        print("  - comprehensive_bridge_graph.pkl (main data)")
-        print("  - all_feature_names.csv (feature mapping)")
-        print("  - comprehensive_metadata.json (statistics)")
-        print("  - all_columns_extracted.txt (full column list)")
+        print(f"  - {DATA_DIR / 'comprehensive_bridge_graph.pkl'} (main data)")
+        print(f"  - {DATA_DIR / 'all_feature_names.csv'} (feature mapping)")
+        print(f"  - {DATA_DIR / 'comprehensive_metadata.json'} (statistics)")
+        print(f"  - {DATA_DIR / 'all_columns_extracted.txt'} (full column list)")
         
         print("\n" + "="*70)
-        print("Transfer 'comprehensive_bridge_graph.pkl' to your PyTorch machine!")
+        print(f"Transfer '{DATA_DIR / 'comprehensive_bridge_graph.pkl'}' to your PyTorch machine!")
         print("="*70)
         
     except Exception as e:
