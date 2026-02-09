@@ -1,0 +1,48 @@
+{
+  "config": {
+    "model_type": "GCN",
+    "hidden_dim": 128,
+    "num_layers": 3,
+    "dropout": 0.3,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0005,
+    "num_epochs": 200,
+    "patience": 20,
+    "class_weight": true,
+    "device": "cpu"
+  },
+  "training_time": 19.811918020248413,
+  "best_epoch": 9,
+  "train_metrics": {
+    "accuracy": 0.6394888956495285,
+    "precision": 0.12084347120843471,
+    "recall": 0.596,
+    "f1": 0.200944032366824,
+    "auc": 0.6627672044781034
+  },
+  "val_metrics": {
+    "accuracy": 0.6590909090909091,
+    "precision": 0.125,
+    "recall": 0.5740740740740741,
+    "f1": 0.2052980132450331,
+    "auc": 0.6370797720797721
+  },
+  "test_metrics": {
+    "accuracy": 0.6354609929078014,
+    "precision": 0.12359550561797752,
+    "recall": 0.5892857142857143,
+    "f1": 0.2043343653250774,
+    "auc": 0.5961781862205591
+  },
+  "confusion_matrix": [
+    [
+      415,
+      234
+    ],
+    [
+      23,
+      33
+    ]
+  ],
+  "timestamp": "2026-02-06 18:18:09"
+}

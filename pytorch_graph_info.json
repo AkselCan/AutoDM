@@ -1,0 +1,10 @@
+{
+  "num_nodes": 4696,
+  "num_edges": 795888,
+  "num_features": 52,
+  "num_classes": 2,
+  "target_column": "currentDeckCR",
+  "train_size": 3287,
+  "val_size": 704,
+  "test_size": 705
+}
