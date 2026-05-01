@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bridge Health Intelligence Dashboard</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+  <style>
+    /* ── Design tokens ──────────────────────────────── */
+    :root {
+      --bg: #0c1020;
+      --surface1: #131929;
+      --surface2: #1a2240;
+      --surface3: #22305a;
+      --border: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.14);
+      --text: #e8eaf0;
+      --text2: #8895ad;
+      --text3: #5a6578;
+      --accent: #5b9cf6;
+      --accent2: #3a7bd5;
+      --critical: #ef4444;
+      --poor: #f97316;
+      --fair: #eab308;
+      --good: #22c55e;
+      --critical-bg: rgba(239,68,68,0.12);
+      --poor-bg: rgba(249,115,22,0.12);
+      --fair-bg: rgba(234,179,8,0.12);
+      --good-bg: rgba(34,197,94,0.12);
+      --header-h: 56px;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      height: var(--header-h);
+      background: var(--surface1);
+      border-bottom: 1px solid var(--border-bright);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 24px;
+      flex-shrink: 0;
+      z-index: 1000;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 15px; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap;
+    }
+    .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .tab-nav { display: flex; gap: 2px; }
+    .tab-btn {
+      padding: 6px 16px; border-radius: 6px; border: none;
+      background: transparent; color: var(--text2);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .tab-btn:hover { background: var(--surface2); color: var(--text); }
+    .tab-btn.active { background: var(--surface3); color: var(--text); }
+    .header-stats {
+      margin-left: auto; display: flex; gap: 16px; align-items: center;
+    }
+    .stat-pill {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid var(--border-bright);
+      font-size: 12px; font-weight: 500; color: var(--text2);
+      background: var(--surface2);
+    }
+    .stat-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .stat-pill .count { color: var(--text); font-weight: 600; }
+
+    /* ── Tabs ────────────────────────────────────────── */
+    .tab-panel { display: none; flex: 1; overflow: hidden; position: relative; }
+    .tab-panel.active { display: flex; }
+
+    /* ── MAP TAB ─────────────────────────────────────── */
+    #tab-map { flex-direction: column; }
+    #map { flex: 1; z-index: 1; }
+
+    /* Map floating controls */
+    .map-controls {
+      position: absolute; top: 12px; left: 12px; z-index: 500;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .map-ctrl-box {
+      background: var(--surface1); border: 1px solid var(--border-bright);
+      border-radius: var(--radius); padding: 10px 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      min-width: 180px;
+    }
+    .ctrl-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+
+    /* Year slider */
+    #year-slider-wrap {
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 500; background: var(--surface1);
+      border: 1px solid var(--border-bright);
+      border-radius: 30px; padding: 8px 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .year-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+    #year-slider { -webkit-appearance: none; appearance: none; width: 200px; height: 4px; border-radius: 2px; background: var(--surface3); outline: none; }
+    #year-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 6px var(--accent); }
+    #year-display { font-size: 14px; font-weight: 700; color: var(--accent); min-width: 36px; text-align: center; }
+
+    /* Metric selector */
+    .map-ctrl-box select {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border-bright);
+      color: var(--text); border-radius: 5px; padding: 4px 8px; font-size: 12px; outline: none;
+    }
+
+    /* Filter checkboxes */
+    .tier-filters { display: flex; flex-direction: column; gap: 5px; }
+    .tier-check { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+    .tier-check input { accent-color: var(--accent); cursor: pointer; }
+    .tier-check .tier-swatch { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* Map legend */
+    .map-legend {
+      position: absolute; bottom: 24px; right: 16px; z-index: 500;
+      background: var(--surface1); border: 1px solid var(--border-bright);
+      border-radius: var(--radius); padding: 10px 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); margin-top: 4px; }
+    .legend-swatch { width: 12px; height: 12px; border-radius: 50%; }
+
+    /* Bridge side panel */
+    #bridge-panel {
+      position: absolute; top: 0; right: 0; bottom: 0; width: 340px;
+      background: var(--surface1); border-left: 1px solid var(--border-bright);
+      z-index: 500; overflow-y: auto;
+      transform: translateX(100%); transition: transform .25s ease;
+      display: flex; flex-direction: column;
+    }
+    #bridge-panel.open { transform: translateX(0); }
+    .panel-header {
+      padding: 16px; border-bottom: 1px solid var(--border); display: flex;
+      align-items: flex-start; justify-content: space-between; gap: 8px;
+    }
+    .panel-close {
+      background: none; border: none; color: var(--text2); font-size: 18px;
+      cursor: pointer; padding: 2px; line-height: 1; flex-shrink: 0;
+    }
+    .panel-close:hover { color: var(--text); }
+    .panel-body { padding: 16px; flex: 1; }
+
+    /* ── Tier badges ─────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge.critical { background: var(--critical-bg); color: var(--critical); border: 1px solid rgba(239,68,68,0.25); }
+    .badge.poor { background: var(--poor-bg); color: var(--poor); border: 1px solid rgba(249,115,22,0.25); }
+    .badge.fair { background: var(--fair-bg); color: var(--fair); border: 1px solid rgba(234,179,8,0.25); }
+    .badge.good { background: var(--good-bg); color: var(--good); border: 1px solid rgba(34,197,94,0.25); }
+
+    /* ── Info grid ───────────────────────────────────── */
+    .info-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+    }
+    .info-cell { background: var(--surface2); border-radius: 6px; padding: 8px 10px; }
+    .info-cell .label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 3px; }
+    .info-cell .value { font-size: 14px; font-weight: 600; color: var(--text); }
+    .info-cell .value.accent { color: var(--accent); }
+
+    /* ── HI Bar ──────────────────────────────────────── */
+    .hi-bar-wrap { margin-bottom: 14px; }
+    .hi-bar-track { height: 6px; border-radius: 3px; background: var(--surface3); position: relative; overflow: hidden; }
+    .hi-bar-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+    .hi-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+
+    /* ── NBI Ratings ─────────────────────────────────── */
+    .nbi-ratings { display: flex; gap: 8px; margin-bottom: 14px; }
+    .nbi-rating { flex: 1; text-align: center; background: var(--surface2); border-radius: 6px; padding: 8px 4px; }
+    .nbi-rating .nbi-score { font-size: 20px; font-weight: 700; }
+    .nbi-rating .nbi-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+    /* ── Section divider ─────────────────────────────── */
+    .section-title {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text3); margin: 14px 0 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Panel action button */
+    .btn-primary {
+      width: 100%; padding: 9px; border-radius: 7px; border: none;
+      background: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background .15s; margin-top: 6px;
+    }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-outline {
+      width: 100%; padding: 8px; border-radius: 7px;
+      border: 1px solid var(--border-bright); background: transparent;
+      color: var(--text2); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background .15s; margin-top: 6px;
+    }
+    .btn-outline:hover { background: var(--surface2); color: var(--text); }
+
+    /* ── COMPARE TAB ─────────────────────────────────── */
+    #tab-compare { flex-direction: column; overflow: hidden; }
+    .compare-header {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+      background: var(--surface1); flex-wrap: wrap;
+    }
+    .compare-title { font-size: 14px; font-weight: 600; }
+    .compare-selector { display: flex; align-items: center; gap: 8px; }
+    .compare-selector input {
+      background: var(--surface2); border: 1px solid var(--border-bright);
+      color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: 13px;
+      outline: none; width: 200px;
+    }
+    .compare-selector input::placeholder { color: var(--text3); }
+    .btn-sm {
+      padding: 6px 12px; border-radius: 6px; border: none;
+      background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-sm:hover { background: var(--accent2); }
+    .btn-sm.danger { background: rgba(239,68,68,0.15); color: var(--critical); border: 1px solid rgba(239,68,68,0.3); }
+    .btn-sm.danger:hover { background: rgba(239,68,68,0.25); }
+    .compare-hint { font-size: 12px; color: var(--text3); margin-left: auto; }
+
+    .compare-body { flex: 1; overflow-x: auto; overflow-y: hidden; display: flex; }
+    .compare-cards {
+      display: flex; gap: 0; min-width: 100%; height: 100%;
+    }
+    .compare-card {
+      flex: 1; min-width: 380px; max-width: 560px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .compare-card:last-child { border-right: none; }
+    .card-head {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0;
+      background: var(--surface2);
+    }
+    .card-head-info { flex: 1; min-width: 0; }
+    .card-id { font-size: 11px; color: var(--text3); font-weight: 600; margin-bottom: 2px; }
+    .card-name {
+      font-size: 14px; font-weight: 600; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .card-loc { font-size: 12px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-remove {
+      background: none; border: none; color: var(--text3);
+      font-size: 16px; cursor: pointer; padding: 2px; flex-shrink: 0;
+    }
+    .card-remove:hover { color: var(--critical); }
+
+    .card-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+
+    /* Compare chart container */
+    .chart-wrap { width: 100%; height: 220px; }
+    .chart-wrap-lg { width: 100%; height: 260px; }
+
+    /* Element table */
+    .elem-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .elem-table th {
+      text-align: left; padding: 5px 8px; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3);
+      border-bottom: 1px solid var(--border);
+    }
+    .elem-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); }
+    .elem-table tr:last-child td { border-bottom: none; }
+    .hi-mini { display: inline-block; width: 40px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+
+    /* Climate bars */
+    .climate-bars { display: flex; flex-direction: column; gap: 7px; }
+    .climate-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .climate-row .c-label { width: 130px; color: var(--text2); font-size: 11px; flex-shrink: 0; }
+    .climate-row .c-track { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; }
+    .climate-row .c-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+    .climate-row .c-val { width: 50px; text-align: right; color: var(--text2); font-size: 11px; }
+
+    /* Empty state */
+    .empty-compare {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      color: var(--text3); text-align: center; padding: 40px;
+    }
+    .empty-compare .icon { font-size: 40px; opacity: 0.4; }
+    .empty-compare p { font-size: 14px; max-width: 260px; line-height: 1.5; }
+
+    /* ── SCENARIO TAB ────────────────────────────────── */
+    #tab-scenario { flex-direction: row; overflow: hidden; }
+    .scenario-sidebar {
+      width: 340px; flex-shrink: 0;
+      background: var(--surface1); border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 20px;
+    }
+    .scenario-main { flex: 1; overflow-y: auto; padding: 20px; }
+
+    .scenario-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .scenario-sub { font-size: 12px; color: var(--text2); margin-bottom: 16px; line-height: 1.5; }
+
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .preset-btn {
+      padding: 10px 8px; border-radius: 8px;
+      border: 1px solid var(--border-bright); background: var(--surface2);
+      color: var(--text2); font-size: 12px; font-weight: 500; cursor: pointer;
+      text-align: left; transition: all .15s;
+    }
+    .preset-btn:hover { border-color: var(--accent); color: var(--text); }
+    .preset-btn.active { border-color: var(--accent); background: rgba(91,156,246,0.12); color: var(--accent); }
+    .preset-btn .preset-name { font-weight: 600; margin-bottom: 2px; }
+    .preset-btn .preset-desc { font-size: 10px; color: var(--text3); line-height: 1.3; }
+    .preset-btn.active .preset-desc { color: rgba(91,156,246,0.7); }
+
+    /* Sliders */
+    .slider-group { display: flex; flex-direction: column; gap: 14px; }
+    .slider-item { }
+    .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .slider-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .slider-val { font-size: 14px; font-weight: 700; color: var(--accent); min-width: 42px; text-align: right; }
+    .slider-desc { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+    input[type=range].param-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 2px; background: var(--surface3); outline: none;
+    }
+    input[type=range].param-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px;
+      border-radius: 50%; background: var(--accent); cursor: pointer;
+      box-shadow: 0 0 5px rgba(91,156,246,0.5);
+    }
+    .slider-ticks { display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); margin-top: 3px; }
+
+    /* Scenario impact */
+    .impact-section { background: var(--surface1); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
+    .impact-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    .impact-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+    .impact-cell { text-align: center; background: var(--surface2); border-radius: 8px; padding: 12px 8px; }
+    .impact-cell .ic-count { font-size: 22px; font-weight: 700; }
+    .impact-cell .ic-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    .impact-cell .ic-delta { font-size: 11px; margin-top: 4px; font-weight: 500; }
+    .delta-up { color: var(--critical); }
+    .delta-dn { color: var(--good); }
+    .delta-ne { color: var(--text3); }
+
+    .scenario-chart-wrap { width: 100%; height: 280px; margin-bottom: 16px; }
+    .apply-scenario-btn {
+      width: 100%; padding: 11px; border-radius: 8px; border: none;
+      background: var(--accent); color: #fff; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background .15s; margin-top: 8px;
+    }
+    .apply-scenario-btn:hover { background: var(--accent2); }
+    .reset-scenario-btn {
+      width: 100%; padding: 9px; border-radius: 8px;
+      border: 1px solid var(--border-bright); background: transparent;
+      color: var(--text2); font-size: 13px; cursor: pointer; margin-top: 6px;
+      transition: background .15s;
+    }
+    .reset-scenario-btn:hover { background: var(--surface2); color: var(--text); }
+
+    /* ── Leaflet overrides ───────────────────────────── */
+    .leaflet-popup-content-wrapper {
+      background: var(--surface1) !important; color: var(--text) !important;
+      border: 1px solid var(--border-bright) !important;
+      border-radius: 10px !important; box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+    }
+    .leaflet-popup-tip { background: var(--surface1) !important; }
+    .leaflet-popup-content { margin: 14px !important; min-width: 220px; }
+    .leaflet-container { background: #1a1f2e; }
+    .leaflet-tile { filter: brightness(0.75) saturate(0.9); }
+
+    /* Popup styles */
+    .popup-bridge-id { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; }
+    .popup-name { font-size: 14px; font-weight: 700; margin: 2px 0 6px; }
+    .popup-loc { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+    .popup-hi-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .popup-hi-num { font-size: 28px; font-weight: 800; }
+    .popup-hi-label { font-size: 11px; color: var(--text2); }
+    .popup-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+    .popup-stat { background: var(--surface2); border-radius: 5px; padding: 5px 8px; }
+    .popup-stat .ps-label { font-size: 10px; color: var(--text3); }
+    .popup-stat .ps-val { font-size: 12px; font-weight: 600; }
+    .popup-btn {
+      display: block; width: 100%; padding: 7px; border-radius: 6px; border: none;
+      background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
+      cursor: pointer; text-align: center; margin-top: 4px;
+    }
+    .popup-btn:hover { background: var(--accent2); }
+    .popup-btn.added { background: var(--good-bg); color: var(--good); border: 1px solid rgba(34,197,94,0.25); cursor: default; }
+
+    /* ── Loading overlay ─────────────────────────────── */
+    #loading {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9999; gap: 16px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--surface3);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: var(--text2); }
+
+    /* ── Scrollbar ───────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+    /* ── Responsive tweaks ───────────────────────────── */
+    @media (max-width: 900px) {
+      .compare-card { min-width: 320px; }
+      .scenario-sidebar { width: 280px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Loading overlay -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading bridge data…</div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="brand">
+    <div class="brand-dot"></div>
+    BRIDGE HEALTH INTELLIGENCE
+  </div>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="map">Map View</button>
+    <button class="tab-btn" data-tab="compare">Compare</button>
+    <button class="tab-btn" data-tab="scenario">Scenarios</button>
+  </nav>
+
+  <div class="header-stats" id="header-stats">
+    <div class="stat-pill"><span class="dot" style="background:var(--critical)"></span><span id="hs-critical" class="count">…</span>&nbsp;Critical</div>
+    <div class="stat-pill"><span class="dot" style="background:var(--poor)"></span><span id="hs-poor" class="count">…</span>&nbsp;Poor</div>
+    <div class="stat-pill"><span class="dot" style="background:var(--fair)"></span><span id="hs-fair" class="count">…</span>&nbsp;Fair</div>
+    <div class="stat-pill"><span class="dot" style="background:var(--good)"></span><span id="hs-good" class="count">…</span>&nbsp;Good</div>
+  </div>
+</header>
+
+<!-- MAP TAB -->
+<div id="tab-map" class="tab-panel active">
+  <div id="map"></div>
+
+  <!-- Floating controls -->
+  <div class="map-controls">
+    <div class="map-ctrl-box">
+      <div class="ctrl-label">Color Metric</div>
+      <select id="metric-select">
+        <option value="avg">Bridge Avg HI</option>
+        <option value="worst">Worst Element HI</option>
+        <option value="crit">Criticality Score</option>
+      </select>
+    </div>
+    <div class="map-ctrl-box">
+      <div class="ctrl-label">Show Tiers</div>
+      <div class="tier-filters">
+        <label class="tier-check">
+          <input type="checkbox" class="tier-filter" value="critical" checked>
+          <span class="tier-swatch" style="background:var(--critical)"></span>Critical
+        </label>
+        <label class="tier-check">
+          <input type="checkbox" class="tier-filter" value="poor" checked>
+          <span class="tier-swatch" style="background:var(--poor)"></span>Poor
+        </label>
+        <label class="tier-check">
+          <input type="checkbox" class="tier-filter" value="fair" checked>
+          <span class="tier-swatch" style="background:var(--fair)"></span>Fair
+        </label>
+        <label class="tier-check">
+          <input type="checkbox" class="tier-filter" value="good" checked>
+          <span class="tier-swatch" style="background:var(--good)"></span>Good
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Year slider -->
+  <div id="year-slider-wrap">
+    <span class="year-label">Forecast Year</span>
+    <input type="range" id="year-slider" min="0" max="4" step="1" value="0">
+    <span id="year-display">2025</span>
+  </div>
+
+  <!-- Legend -->
+  <div class="map-legend">
+    <div class="ctrl-label" style="margin-bottom:6px">Health Index</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--critical)"></span>&lt; 50 — Critical</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--poor)"></span>50–70 — Poor</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--fair)"></span>70–85 — Fair</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--good)"></span>&ge; 85 — Good</div>
+  </div>
+
+  <!-- Bridge side panel -->
+  <div id="bridge-panel">
+    <div class="panel-header">
+      <div id="panel-head-content"></div>
+      <button class="panel-close" id="panel-close-btn">&times;</button>
+    </div>
+    <div class="panel-body" id="panel-body-content"></div>
+  </div>
+</div>
+
+<!-- COMPARE TAB -->
+<div id="tab-compare" class="tab-panel">
+  <div class="compare-header">
+    <span class="compare-title">Bridge Comparison</span>
+    <div class="compare-selector">
+      <input type="text" id="compare-input" placeholder="Enter Bridge ID or name…" autocomplete="off">
+      <button class="btn-sm" id="compare-add-btn">Add Bridge</button>
+    </div>
+    <button class="btn-sm danger" id="compare-clear-btn">Clear All</button>
+    <span class="compare-hint" id="compare-hint">Up to 3 bridges</span>
+  </div>
+  <div class="compare-body">
+    <div id="compare-cards" class="compare-cards"></div>
+  </div>
+</div>
+
+<!-- SCENARIO TAB -->
+<div id="tab-scenario" class="tab-panel">
+  <div class="scenario-sidebar">
+    <div class="scenario-title">Scenario Controls</div>
+    <div class="scenario-sub">Adjust deterioration drivers or choose a pre-built scenario to simulate how bridge health evolves under different conditions.</div>
+
+    <div class="ctrl-label" style="margin-bottom:8px">Presets</div>
+    <div class="preset-grid" id="preset-grid">
+      <button class="preset-btn active" data-preset="baseline">
+        <div class="preset-name">Baseline</div>
+        <div class="preset-desc">Business as usual. No external stress changes.</div>
+      </button>
+      <button class="preset-btn" data-preset="climate">
+        <div class="preset-name">Climate Stress</div>
+        <div class="preset-desc">Accelerated climate impact, higher precipitation.</div>
+      </button>
+      <button class="preset-btn" data-preset="traffic">
+        <div class="preset-name">Heavy Traffic</div>
+        <div class="preset-desc">High traffic growth with increased truck loading.</div>
+      </button>
+      <button class="preset-btn" data-preset="extreme">
+        <div class="preset-name">Extreme Weather</div>
+        <div class="preset-desc">Worst-case climate, max freeze-thaw, heavy rain.</div>
+      </button>
+      <button class="preset-btn" data-preset="optimistic">
+        <div class="preset-name">Optimistic</div>
+        <div class="preset-desc">Lower stress environment, reduced deterioration.</div>
+      </button>
+      <button class="preset-btn" data-preset="custom">
+        <div class="preset-name">Custom</div>
+        <div class="preset-desc">Adjust sliders manually for a custom scenario.</div>
+      </button>
+    </div>
+
+    <div class="ctrl-label" style="margin-bottom:8px">Parameters</div>
+    <div class="slider-group">
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <span class="slider-name">Climate Acceleration</span>
+          <span class="slider-val" id="val-climate">1.0×</span>
+        </div>
+        <div class="slider-desc">Multiplier on baseline climate-driven HI decline</div>
+        <input type="range" class="param-slider" id="sl-climate" min="0.3" max="3.0" step="0.1" value="1.0">
+        <div class="slider-ticks"><span>0.3×</span><span>1×</span><span>2×</span><span>3×</span></div>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <span class="slider-name">Traffic Growth</span>
+          <span class="slider-val" id="val-traffic">1.0%/yr</span>
+        </div>
+        <div class="slider-desc">Annual average daily traffic growth rate</div>
+        <input type="range" class="param-slider" id="sl-traffic" min="0" max="5" step="0.1" value="1">
+        <div class="slider-ticks"><span>0%</span><span>1%</span><span>3%</span><span>5%</span></div>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <span class="slider-name">Freeze-Thaw Intensity</span>
+          <span class="slider-val" id="val-ft">1.0×</span>
+        </div>
+        <div class="slider-desc">Affects bearing, deck, and joint deterioration</div>
+        <input type="range" class="param-slider" id="sl-ft" min="0.3" max="2.5" step="0.1" value="1.0">
+        <div class="slider-ticks"><span>0.3×</span><span>1×</span><span>2×</span><span>2.5×</span></div>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <span class="slider-name">Precipitation Factor</span>
+          <span class="slider-val" id="val-precip">1.0×</span>
+        </div>
+        <div class="slider-desc">Affects scour, corrosion, and drainage loading</div>
+        <input type="range" class="param-slider" id="sl-precip" min="0.3" max="2.5" step="0.1" value="1.0">
+        <div class="slider-ticks"><span>0.3×</span><span>1×</span><span>2×</span><span>2.5×</span></div>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <span class="slider-name">Temperature Offset</span>
+          <span class="slider-val" id="val-temp">0°C</span>
+        </div>
+        <div class="slider-desc">Mean temperature shift from baseline</div>
+        <input type="range" class="param-slider" id="sl-temp" min="-5" max="5" step="0.5" value="0">
+        <div class="slider-ticks"><span>-5°C</span><span>0°C</span><span>+5°C</span></div>
+      </div>
+
+    </div>
+
+    <button class="apply-scenario-btn" id="apply-scenario-btn">Apply to Map</button>
+    <button class="reset-scenario-btn" id="reset-scenario-btn">Reset to Baseline</button>
+  </div>
+
+  <div class="scenario-main">
+    <div class="impact-section">
+      <div class="impact-title">Projected Risk Distribution (2029)</div>
+      <div class="impact-grid" id="impact-grid">
+        <div class="impact-cell">
+          <div class="ic-count" style="color:var(--critical)" id="ic-critical">…</div>
+          <div class="ic-label">Critical</div>
+          <div class="ic-delta" id="icd-critical">…</div>
+        </div>
+        <div class="impact-cell">
+          <div class="ic-count" style="color:var(--poor)" id="ic-poor">…</div>
+          <div class="ic-label">Poor</div>
+          <div class="ic-delta" id="icd-poor">…</div>
+        </div>
+        <div class="impact-cell">
+          <div class="ic-count" style="color:var(--fair)" id="ic-fair">…</div>
+          <div class="ic-label">Fair</div>
+          <div class="ic-delta" id="icd-fair">…</div>
+        </div>
+        <div class="impact-cell">
+          <div class="ic-count" style="color:var(--good)" id="ic-good">…</div>
+          <div class="ic-label">Good</div>
+          <div class="ic-delta" id="icd-good">…</div>
+        </div>
+      </div>
+      <div id="scenario-dist-chart" style="width:100%;height:200px;"></div>
+    </div>
+
+    <div class="impact-section">
+      <div class="impact-title">HI Trajectory — Sample Bridges</div>
+      <div id="scenario-traj-chart" style="width:100%;height:300px;"></div>
+    </div>
+
+    <div class="impact-section">
+      <div class="impact-title">Scenario vs Baseline — 2029 HI Shift</div>
+      <div id="scenario-shift-chart" style="width:100%;height:280px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   GLOBAL STATE
+════════════════════════════════════════════════════ */
+const YEARS = [2025, 2026, 2027, 2028, 2029];
+let allBridges = [];
+let bridgeIndex = {};
+let markerIndex = {};
+let clusterGroup = null;
+let leafletMap = null;
+let selectedYearIdx = 0;
+let activeMetric = 'avg';
+let visibleTiers = new Set(['critical','poor','fair','good']);
+let comparisonBridges = [];  // up to 3 bridge IDs
+let openPanelBridge = null; // bridge currently shown in the side panel
+let scenarioMode = false;
+let scenarioParams = { climate: 1.0, traffic: 1.0, ft: 1.0, precip: 1.0, temp: 0 };
+// Per-bridge scenario HI overrides (computed on demand)
+let scenarioHICache = {};
+
+/* ════════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════════ */
+function tierFromHI(hi) {
+  if (hi === null || hi === undefined || isNaN(hi)) return 'fair';
+  if (hi < 50) return 'critical';
+  if (hi < 70) return 'poor';
+  if (hi < 85) return 'fair';
+  return 'good';
+}
+const TIER_COLOR = { critical:'#ef4444', poor:'#f97316', fair:'#eab308', good:'#22c55e' };
+
+function hiColor(hi) {
+  return TIER_COLOR[tierFromHI(hi)] || '#8895ad';
+}
+
+function fmt(v, digits=1, suffix='') {
+  if (v === null || v === undefined) return 'N/A';
+  return (+v).toFixed(digits) + suffix;
+}
+function fmtInt(v) {
+  if (v === null || v === undefined) return 'N/A';
+  return Math.round(v).toLocaleString();
+}
+function fmtStr(v) { return v || 'N/A'; }
+
+function getBridgeHI(bridge, yrIdx, metric) {
+  if (scenarioMode && scenarioHICache[bridge.id]) {
+    const s = scenarioHICache[bridge.id];
+    if (metric === 'avg') return s[yrIdx];
+    if (metric === 'worst') {
+      // Worst = scale from base worst by scenario ratio
+      const baseWorst = getWorstElemHI(bridge, yrIdx);
+      const baseAvg = bridge.hi ? bridge.hi[yrIdx] : null;
+      const scenAvg = s[yrIdx];
+      if (baseAvg && baseAvg > 0 && baseWorst !== null) {
+        return Math.max(0, baseWorst * (scenAvg / baseAvg));
+      }
+      return baseWorst;
+    }
+  }
+  if (metric === 'avg') return bridge.hi ? bridge.hi[yrIdx] : null;
+  if (metric === 'worst') return getWorstElemHI(bridge, yrIdx);
+  if (metric === 'crit') return bridge.crit_score ? (1 - bridge.crit_score) * 100 : null;
+  return null;
+}
+
+function getWorstElemHI(bridge, yrIdx) {
+  if (!bridge.elements || !bridge.elements.length) return bridge.hi ? bridge.hi[yrIdx] : null;
+  let minHI = Infinity;
+  for (const e of bridge.elements) {
+    const v = e.hi && e.hi[yrIdx] != null ? e.hi[yrIdx] : Infinity;
+    if (v < minHI) minHI = v;
+  }
+  return minHI === Infinity ? null : minHI;
+}
+
+/* ════════════════════════════════════════════════════
+   SCENARIO COMPUTATION
+════════════════════════════════════════════════════ */
+function getScenarioMultiplier(p) {
+  const trafficMult = 1 + (p.traffic / 100) * 4; // 4-year compounded
+  const tempMult = 1 + p.temp * 0.05;
+  return p.climate * trafficMult * p.ft * p.precip * tempMult;
+}
+
+function computeScenarioHI(baseHI, multiplier) {
+  if (!baseHI || baseHI[0] === null) return baseHI;
+  const result = [baseHI[0]];
+  for (let yr = 1; yr < 5; yr++) {
+    const prev = baseHI[yr - 1];
+    const curr = baseHI[yr];
+    if (prev === null || curr === null) { result.push(null); continue; }
+    const delta = prev - curr;
+    result.push(Math.max(0, result[yr - 1] - delta * multiplier));
+  }
+  return result;
+}
+
+function applyScenarioToAll() {
+  const mult = getScenarioMultiplier(scenarioParams);
+  scenarioHICache = {};
+  for (const b of allBridges) {
+    if (b.hi) scenarioHICache[b.id] = computeScenarioHI(b.hi, mult);
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   TIER COUNTS
+════════════════════════════════════════════════════ */
+function computeTierCounts(yrIdx, useScenario) {
+  const counts = { critical: 0, poor: 0, fair: 0, good: 0 };
+  for (const b of allBridges) {
+    let hi;
+    if (useScenario && scenarioHICache[b.id]) {
+      hi = scenarioHICache[b.id][yrIdx];
+    } else {
+      hi = b.hi ? b.hi[yrIdx] : null;
+    }
+    const t = tierFromHI(hi);
+    counts[t]++;
+  }
+  return counts;
+}
+
+function updateHeaderStats(yrIdx) {
+  const counts = computeTierCounts(yrIdx, scenarioMode);
+  document.getElementById('hs-critical').textContent = counts.critical.toLocaleString();
+  document.getElementById('hs-poor').textContent = counts.poor.toLocaleString();
+  document.getElementById('hs-fair').textContent = counts.fair.toLocaleString();
+  document.getElementById('hs-good').textContent = counts.good.toLocaleString();
+}
+
+/* ════════════════════════════════════════════════════
+   MAP INIT
+════════════════════════════════════════════════════ */
+function initMap() {
+  leafletMap = L.map('map', { zoomControl: true, preferCanvas: true }).setView([27.5, -82.5], 7);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+  }).addTo(leafletMap);
+
+  clusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    iconCreateFunction: function(cluster) {
+      const children = cluster.getAllChildMarkers();
+      let worst = 100;
+      for (const m of children) {
+        const hi = getBridgeHI(m.options._bridge, selectedYearIdx, activeMetric);
+        if (hi !== null && hi < worst) worst = hi;
+      }
+      const clr = hiColor(worst);
+      const sz = children.length > 99 ? 44 : 36;
+      return L.divIcon({
+        html: `<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${clr};opacity:0.85;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,0.3)">${cluster.getChildCount()}</div>`,
+        className: '',
+        iconSize: [sz, sz],
+        iconAnchor: [sz/2, sz/2],
+      });
+    }
+  });
+
+  for (const bridge of allBridges) {
+    const hi = getBridgeHI(bridge, 0, 'avg');
+    const clr = hiColor(hi);
+    const marker = L.circleMarker([bridge.lat, bridge.lon], {
+      radius: 6,
+      color: 'rgba(255,255,255,0.25)',
+      weight: 1,
+      fillColor: clr,
+      fillOpacity: 0.85,
+      _bridge: bridge,
+      _bridgeId: bridge.id,
+    });
+    marker.on('click', () => showBridgePanel(bridge));
+    markerIndex[bridge.id] = marker;
+    clusterGroup.addLayer(marker);
+  }
+
+  leafletMap.addLayer(clusterGroup);
+}
+
+function updateMapColors() {
+  clusterGroup.clearLayers();
+  for (const bridge of allBridges) {
+    const hi = getBridgeHI(bridge, selectedYearIdx, activeMetric);
+    const tier = tierFromHI(hi);
+    if (!visibleTiers.has(tier)) continue;
+    const clr = hiColor(hi);
+    const marker = markerIndex[bridge.id];
+    if (!marker) continue;
+    marker.setStyle({ fillColor: clr });
+    clusterGroup.addLayer(marker);
+  }
+  updateHeaderStats(selectedYearIdx);
+}
+
+/* ════════════════════════════════════════════════════
+   BRIDGE PANEL
+════════════════════════════════════════════════════ */
+function showBridgePanel(bridge) {
+  openPanelBridge = bridge;
+  const hi = getBridgeHI(bridge, selectedYearIdx, 'avg') ?? 0;
+  const tier = tierFromHI(hi);
+  const worstHI = getWorstElemHI(bridge, selectedYearIdx);
+
+  // Head
+  document.getElementById('panel-head-content').innerHTML = `
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">BRIDGE #${bridge.id}</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">${fmtStr(bridge.facility)}</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="badge ${tier}">${tier}</span>
+      <span style="font-size:12px;color:var(--text2)">${fmtStr(bridge.county)}, ${fmtStr(bridge.state)}</span>
+    </div>`;
+
+  // Body
+  const hiBar = hi ? `<div style="width:${Math.min(100,hi)}%;background:${hiColor(hi)}" class="hi-bar-fill"></div>` : '';
+  const nbiDeck = nbiRatingHtml(bridge.deck_rating, 'Deck');
+  const nbiSuper = nbiRatingHtml(bridge.super_rating, 'Super');
+  const nbiSub = nbiRatingHtml(bridge.sub_rating, 'Sub');
+
+  const worstElemRows = (bridge.elements || []).slice(0,5).map(e => {
+    const ehi = e.hi ? e.hi[selectedYearIdx] : null;
+    const clr = hiColor(ehi);
+    return `<tr>
+      <td>${e.name}</td>
+      <td><span style="color:${clr};font-weight:600">${ehi !== null ? ehi.toFixed(1) : 'N/A'}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('panel-body-content').innerHTML = `
+    <div class="hi-bar-wrap">
+      <div class="hi-bar-label">
+        <span>Health Index (${YEARS[selectedYearIdx]})</span>
+        <span style="font-weight:700;color:${hiColor(hi)}">${hi !== null ? hi.toFixed(1) : 'N/A'}</span>
+      </div>
+      <div class="hi-bar-track">${hiBar}</div>
+    </div>
+
+    <div class="nbi-ratings">${nbiDeck}${nbiSuper}${nbiSub}</div>
+
+    <div class="section-title">Criticality</div>
+    <div class="info-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:14px">
+      <div class="info-cell" style="grid-column:1/-1">
+        <div class="label">Criticality Score</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <div style="flex:1;height:6px;border-radius:3px;background:var(--surface3);overflow:hidden">
+            <div style="height:100%;border-radius:3px;width:${bridge.crit_score !== null && bridge.crit_score !== undefined ? Math.min(100, bridge.crit_score * 100).toFixed(1) : 0}%;background:${bridge.crit_score > 0.66 ? 'var(--critical)' : bridge.crit_score > 0.33 ? 'var(--poor)' : 'var(--good)'}"></div>
+          </div>
+          <span style="font-size:15px;font-weight:700;color:${bridge.crit_score > 0.66 ? 'var(--critical)' : bridge.crit_score > 0.33 ? 'var(--poor)' : 'var(--good)'}">
+            ${bridge.crit_score !== null && bridge.crit_score !== undefined ? bridge.crit_score.toFixed(3) : 'N/A'}
+          </span>
+        </div>
+      </div>
+      <div class="info-cell"><div class="label">CTIM Impact</div><div class="value">${bridge.ctim !== null && bridge.ctim !== undefined ? bridge.ctim.toFixed(3) : 'N/A'}</div></div>
+      <div class="info-cell"><div class="label">HI Penalty</div><div class="value">${bridge.hi_penalty !== null && bridge.hi_penalty !== undefined ? bridge.hi_penalty.toFixed(3) : 'N/A'}</div></div>
+      <div class="info-cell"><div class="label">Risk Tier</div><div class="value"><span class="badge ${tier}">${tier}</span></div></div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-cell"><div class="label">Year Built</div><div class="value">${fmtStr(bridge.year_built)}</div></div>
+      <div class="info-cell"><div class="label">ADT</div><div class="value">${fmtInt(bridge.adt)}</div></div>
+      <div class="info-cell"><div class="label">Material</div><div class="value" style="font-size:12px">${fmtStr(bridge.material)}</div></div>
+      <div class="info-cell"><div class="label">Design</div><div class="value" style="font-size:12px">${fmtStr(bridge.design)}</div></div>
+      <div class="info-cell"><div class="label">Length (ft)</div><div class="value">${fmt(bridge.length_ft, 0)}</div></div>
+      <div class="info-cell"><div class="label">Deck Area (sf)</div><div class="value">${fmtInt(bridge.deck_area_sf)}</div></div>
+    </div>
+
+    <div class="section-title">Top Deteriorating Elements</div>
+    <table class="elem-table" style="width:100%">
+      <tr><th>Element</th><th>HI</th></tr>
+      ${worstElemRows || '<tr><td colspan="2" style="color:var(--text3)">No element data</td></tr>'}
+    </table>
+
+    <div class="section-title">Climate & Traffic</div>
+    <div class="info-grid">
+      <div class="info-cell"><div class="label">Avg Temp</div><div class="value">${fmt(bridge.avg_temp, 1)}°C</div></div>
+      <div class="info-cell"><div class="label">Freeze-Thaw</div><div class="value">${fmt(bridge.freeze_thaw, 0)}/yr</div></div>
+      <div class="info-cell"><div class="label">Precip Days</div><div class="value">${fmt(bridge.precip_days, 0)}/yr</div></div>
+      <div class="info-cell"><div class="label">Truck %</div><div class="value">${fmt(bridge.truck_pct, 0)}%</div></div>
+    </div>
+
+    <div class="section-title">Administration</div>
+    <div class="info-grid">
+      <div class="info-cell" style="grid-column:1/-1"><div class="label">Owner</div><div class="value" style="font-size:12px">${fmtStr(bridge.owner)}</div></div>
+      <div class="info-cell" style="grid-column:1/-1"><div class="label">Feature Intersected</div><div class="value" style="font-size:12px">${fmtStr(bridge.feature)}</div></div>
+    </div>
+
+    <button class="btn-primary" id="panel-compare-btn" onclick="addToCompareFromPanel('${bridge.id}')">+ Add to Comparison</button>
+    <button class="btn-outline" onclick="switchTab('compare')">Open Comparison Tab</button>
+  `;
+
+  // Reflect already-added state
+  if (comparisonBridges.includes(bridge.id)) {
+    const btn = document.getElementById('panel-compare-btn');
+    if (btn) { btn.textContent = 'Added to Comparison'; btn.disabled = true; btn.style.background = 'var(--good-bg)'; btn.style.color = 'var(--good)'; }
+  }
+
+  document.getElementById('bridge-panel').classList.add('open');
+}
+
+function addToCompareFromPanel(id) {
+  addToComparison(id);
+  const btn = document.getElementById('panel-compare-btn');
+  if (btn) { btn.textContent = 'Added to Comparison'; btn.disabled = true; btn.style.background = 'var(--good-bg)'; btn.style.color = 'var(--good)'; }
+}
+
+function nbiRatingHtml(rating, label) {
+  let clr = 'var(--text2)';
+  if (rating !== null && rating !== undefined) {
+    if (rating >= 7) clr = 'var(--good)';
+    else if (rating >= 5) clr = 'var(--fair)';
+    else if (rating >= 3) clr = 'var(--poor)';
+    else clr = 'var(--critical)';
+  }
+  return `<div class="nbi-rating"><div class="nbi-score" style="color:${clr}">${rating ?? '—'}</div><div class="nbi-label">${label}</div></div>`;
+}
+
+/* ════════════════════════════════════════════════════
+   COMPARISON TAB
+════════════════════════════════════════════════════ */
+function addToComparison(id) {
+  if (comparisonBridges.includes(id)) return;
+  if (comparisonBridges.length >= 3) {
+    comparisonBridges.shift(); // drop oldest
+  }
+  comparisonBridges.push(id);
+  renderCompareCards();
+}
+
+function removeFromComparison(id) {
+  comparisonBridges = comparisonBridges.filter(x => x !== id);
+  renderCompareCards();
+}
+
+function renderCompareCards() {
+  const container = document.getElementById('compare-cards');
+  const hint = document.getElementById('compare-hint');
+  hint.textContent = `${comparisonBridges.length}/3 bridges selected`;
+
+  if (!comparisonBridges.length) {
+    container.innerHTML = `
+      <div class="empty-compare" style="flex:1">
+        <div class="icon">🗺️</div>
+        <p>Select bridges on the map and click "Add to Comparison", or enter a Bridge ID above.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  for (const id of comparisonBridges) {
+    const b = bridgeIndex[id];
+    if (!b) continue;
+    const card = document.createElement('div');
+    card.className = 'compare-card';
+    card.id = `ccard-${id}`;
+    const hiVals = YEARS.map((_, i) => scenarioMode && scenarioHICache[id] ? scenarioHICache[id][i] : (b.hi ? b.hi[i] : null));
+    const latestHI = hiVals[0] ?? 0;
+    const tier = tierFromHI(latestHI);
+
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="card-head-info">
+          <div class="card-id">BRIDGE #${id}</div>
+          <div class="card-name">${fmtStr(b.facility) || fmtStr(b.feature)}</div>
+          <div class="card-loc">${fmtStr(b.county)} · ${fmtStr(b.state)}</div>
+        </div>
+        <span class="badge ${tier}">${tier}</span>
+        <button class="card-remove" onclick="removeFromComparison('${id}')">&times;</button>
+      </div>
+      <div class="card-body">
+        ${buildCardBody(b, hiVals, id)}
+      </div>`;
+    container.appendChild(card);
+  }
+
+  // Render Plotly charts after DOM is ready
+  requestAnimationFrame(() => {
+    for (const id of comparisonBridges) {
+      const b = bridgeIndex[id];
+      if (!b) continue;
+      renderElementHIChart(id, b);
+    }
+  });
+}
+
+function buildCardBody(b, hiVals, id) {
+  const latestHI = hiVals[0] ?? 0;
+  const hi29 = hiVals[4] ?? 0;
+  const delta = hi29 - latestHI;
+  const deltaStr = (delta >= 0 ? '+' : '') + delta.toFixed(1);
+  const deltaClr = delta < -5 ? 'var(--critical)' : delta < 0 ? 'var(--poor)' : 'var(--good)';
+
+  // Climate bar helper
+  const climBar = (val, max, unit='') => {
+    const pct = max > 0 ? Math.min(100, (val ?? 0) / max * 100) : 0;
+    return `<div class="climate-row">
+      <span class="c-label">${unit.split('|')[0]}</span>
+      <span class="c-track"><span class="c-fill" style="width:${pct}%"></span></span>
+      <span class="c-val">${val !== null && val !== undefined ? (+val).toFixed(unit.includes('%') ? 0 : 1) + (unit.split('|')[1]||'') : 'N/A'}</span>
+    </div>`;
+  };
+
+  return `
+    <div class="section-title">Health Trajectory</div>
+    <div class="info-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:8px">
+      <div class="info-cell"><div class="label">HI (2025)</div><div class="value" style="color:${hiColor(latestHI)}">${latestHI.toFixed(1)}</div></div>
+      <div class="info-cell"><div class="label">HI (2029)</div><div class="value" style="color:${hiColor(hi29)}">${hi29.toFixed(1)}</div></div>
+      <div class="info-cell"><div class="label">4-yr Δ</div><div class="value" style="color:${deltaClr}">${deltaStr}</div></div>
+    </div>
+    <div id="chart-${id}" class="chart-wrap"></div>
+
+    <div class="section-title">General Info</div>
+    <div class="info-grid">
+      <div class="info-cell"><div class="label">Year Built</div><div class="value">${fmtStr(b.year_built)}</div></div>
+      <div class="info-cell"><div class="label">Bridge Age</div><div class="value">${fmtStr(b.age)} yr</div></div>
+      <div class="info-cell"><div class="label">ADT</div><div class="value">${fmtInt(b.adt)}</div></div>
+      <div class="info-cell"><div class="label">Future ADT</div><div class="value">${fmtInt(b.future_adt)}</div></div>
+      <div class="info-cell"><div class="label">Material</div><div class="value" style="font-size:12px">${fmtStr(b.material)}</div></div>
+      <div class="info-cell"><div class="label">Design</div><div class="value" style="font-size:12px">${fmtStr(b.design)}</div></div>
+      <div class="info-cell"><div class="label">Length</div><div class="value">${fmt(b.length_ft, 0)} ft</div></div>
+      <div class="info-cell"><div class="label">Width</div><div class="value">${fmt(b.width_ft, 1)} ft</div></div>
+    </div>
+
+    <div class="section-title">Condition Ratings</div>
+    <div class="nbi-ratings">${nbiRatingHtml(b.deck_rating,'Deck')}${nbiRatingHtml(b.super_rating,'Super')}${nbiRatingHtml(b.sub_rating,'Sub')}</div>
+
+    <div class="section-title">Weather & Climate</div>
+    <div class="climate-bars">
+      ${climBar(b.avg_temp, 35, 'Avg Temp (°C)|°C')}
+      ${climBar(b.max_temp, 45, 'Max Temp (°C)|°C')}
+      ${climBar(b.freeze_thaw, 120, 'Freeze-Thaw Cycles|/yr')}
+      ${climBar(b.precip_days, 200, 'Precip Days|/yr')}
+      ${climBar(b.wind_speed, 25, 'Wind Speed|m/s')}
+      ${climBar(b.humidity, 100, 'Humidity|%')}
+    </div>
+
+    <div class="section-title">Traffic</div>
+    <div class="info-grid">
+      <div class="info-cell"><div class="label">ADT</div><div class="value">${fmtInt(b.adt)}</div></div>
+      <div class="info-cell"><div class="label">Truck %</div><div class="value">${fmt(b.truck_pct, 0)}%</div></div>
+    </div>
+
+    <div class="section-title">Administration</div>
+    <div class="info-grid">
+      <div class="info-cell" style="grid-column:1/-1"><div class="label">Owner Agency</div><div class="value" style="font-size:12px">${fmtStr(b.owner)}</div></div>
+      <div class="info-cell" style="grid-column:1/-1"><div class="label">Maintenance</div><div class="value" style="font-size:12px">${fmtStr(b.maintenance)}</div></div>
+      <div class="info-cell" style="grid-column:1/-1"><div class="label">Location</div><div class="value" style="font-size:12px">${fmtStr(b.location)}</div></div>
+      <div class="info-cell"><div class="label">County</div><div class="value">${fmtStr(b.county)}</div></div>
+      <div class="info-cell"><div class="label">Scour</div><div class="value">${fmtStr(b.scour)}</div></div>
+      ${b.year_recon ? `<div class="info-cell"><div class="label">Reconstructed</div><div class="value">${b.year_recon}</div></div>` : ''}
+    </div>
+  `;
+}
+
+function renderElementHIChart(bridgeId, bridge) {
+  const container = document.getElementById(`chart-${bridgeId}`);
+  if (!container) return;
+
+  const elements = bridge.elements || [];
+  const traces = [];
+  const colors = ['#5b9cf6','#ef4444','#f97316','#eab308','#22c55e','#a78bfa','#ec4899','#14b8a6'];
+
+  // Bridge average
+  const avgHI = YEARS.map((_, i) => scenarioMode && scenarioHICache[bridgeId] ? scenarioHICache[bridgeId][i] : (bridge.hi ? bridge.hi[i] : null));
+  traces.push({
+    x: YEARS, y: avgHI, name: 'Bridge Avg',
+    mode: 'lines+markers',
+    line: { color: '#fff', width: 2, dash: 'dot' },
+    marker: { size: 5 }
+  });
+
+  // Top elements (worst first)
+  const topElems = elements.slice(0, 7);
+  topElems.forEach((e, i) => {
+    traces.push({
+      x: YEARS,
+      y: e.hi,
+      name: e.name,
+      mode: 'lines+markers',
+      line: { color: colors[i % colors.length], width: 1.5 },
+      marker: { size: 4 }
+    });
+  });
+
+  const layout = {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { l: 36, r: 10, t: 10, b: 36 },
+    xaxis: { color: '#8895ad', tickfont: { size: 11 }, gridcolor: 'rgba(255,255,255,0.05)', zeroline: false },
+    yaxis: { color: '#8895ad', range: [0, 102], tickfont: { size: 11 }, gridcolor: 'rgba(255,255,255,0.05)', zeroline: false, title: { text: 'HI', font: { size: 11, color: '#8895ad' } } },
+    legend: { font: { size: 10, color: '#8895ad' }, bgcolor: 'transparent', x: 0, y: -0.3, orientation: 'h' },
+    font: { family: 'system-ui, sans-serif' },
+    shapes: [
+      { type: 'line', x0: 2024.8, x1: 2029.2, y0: 50, y1: 50, line: { color: 'rgba(239,68,68,0.3)', width: 1, dash: 'dash' } },
+      { type: 'line', x0: 2024.8, x1: 2029.2, y0: 70, y1: 70, line: { color: 'rgba(249,115,22,0.3)', width: 1, dash: 'dash' } },
+      { type: 'line', x0: 2024.8, x1: 2029.2, y0: 85, y1: 85, line: { color: 'rgba(234,179,8,0.3)', width: 1, dash: 'dash' } },
+    ]
+  };
+
+  Plotly.newPlot(container, traces, layout, { responsive: true, displayModeBar: false });
+}
+
+/* ════════════════════════════════════════════════════
+   SCENARIO TAB
+════════════════════════════════════════════════════ */
+const PRESETS = {
+  baseline:  { climate: 1.0, traffic: 1.0, ft: 1.0, precip: 1.0, temp: 0 },
+  climate:   { climate: 2.0, traffic: 1.0, ft: 1.2, precip: 1.5, temp: 2 },
+  traffic:   { climate: 1.1, traffic: 4.0, ft: 1.0, precip: 1.0, temp: 0 },
+  extreme:   { climate: 2.5, traffic: 1.5, ft: 1.8, precip: 2.0, temp: 3 },
+  optimistic:{ climate: 0.6, traffic: 0.5, ft: 0.7, precip: 0.7, temp: -1 },
+  custom:    null,
+};
+
+function setPreset(name) {
+  if (name === 'custom') return;
+  const p = PRESETS[name];
+  if (!p) return;
+  scenarioParams = { ...p };
+  syncSliders();
+  updateScenarioDisplay();
+}
+
+function syncSliders() {
+  document.getElementById('sl-climate').value = scenarioParams.climate;
+  document.getElementById('sl-traffic').value = scenarioParams.traffic;
+  document.getElementById('sl-ft').value = scenarioParams.ft;
+  document.getElementById('sl-precip').value = scenarioParams.precip;
+  document.getElementById('sl-temp').value = scenarioParams.temp;
+  document.getElementById('val-climate').textContent = scenarioParams.climate.toFixed(1) + '×';
+  document.getElementById('val-traffic').textContent = scenarioParams.traffic.toFixed(1) + '%/yr';
+  document.getElementById('val-ft').textContent = scenarioParams.ft.toFixed(1) + '×';
+  document.getElementById('val-precip').textContent = scenarioParams.precip.toFixed(1) + '×';
+  document.getElementById('val-temp').textContent = (scenarioParams.temp >= 0 ? '+' : '') + scenarioParams.temp.toFixed(1) + '°C';
+}
+
+function updateScenarioDisplay() {
+  applyScenarioToAll();
+
+  const baseCounts = computeTierCounts(4, false);
+  const scenCounts = computeTierCounts(4, true);
+
+  ['critical','poor','fair','good'].forEach(tier => {
+    document.getElementById(`ic-${tier}`).textContent = scenCounts[tier].toLocaleString();
+    const diff = scenCounts[tier] - baseCounts[tier];
+    const el = document.getElementById(`icd-${tier}`);
+    if (diff === 0) { el.textContent = '±0 vs baseline'; el.className = 'ic-delta delta-ne'; }
+    else if (diff > 0) { el.textContent = `+${diff} vs baseline`; el.className = 'ic-delta ' + (tier === 'good' ? 'delta-dn' : 'delta-up'); }
+    else { el.textContent = `${diff} vs baseline`; el.className = 'ic-delta ' + (tier === 'good' ? 'delta-up' : 'delta-dn'); }
+  });
+
+  renderScenarioDistChart(baseCounts, scenCounts);
+  renderScenarioTrajChart();
+  renderScenarioShiftChart();
+}
+
+function renderScenarioDistChart(base, scen) {
+  const tiers = ['Critical','Poor','Fair','Good'];
+  const baseVals = [base.critical, base.poor, base.fair, base.good];
+  const scenVals = [scen.critical, scen.poor, scen.fair, scen.good];
+  const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+
+  const traces = [
+    { name: 'Baseline', x: tiers, y: baseVals, type: 'bar', marker: { color: colors.map(c => c + '55') }, opacity: 0.7 },
+    { name: 'Scenario', x: tiers, y: scenVals, type: 'bar', marker: { color: colors } },
+  ];
+
+  const layout = {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    barmode: 'group', margin: { l: 40, r: 10, t: 10, b: 30 },
+    xaxis: { color: '#8895ad', tickfont: { size: 11 }, gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { color: '#8895ad', tickfont: { size: 11 }, gridcolor: 'rgba(255,255,255,0.05)', zeroline: false },
+    legend: { font: { size: 11, color: '#8895ad' }, bgcolor: 'transparent', orientation: 'h', x: 0.5, xanchor: 'center', y: 1.05 },
+    font: { family: 'system-ui, sans-serif' },
+  };
+  Plotly.react('scenario-dist-chart', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+function renderScenarioTrajChart() {
+  // Sample bridges: take one from each tier (worst, poor, fair, good)
+  const samples = [];
+  const tiers = { critical: null, poor: null, fair: null, good: null };
+  for (const b of allBridges) {
+    const t = tierFromHI(b.hi ? b.hi[0] : null);
+    if (!tiers[t]) { tiers[t] = b; }
+    if (Object.values(tiers).every(v => v)) break;
+  }
+  Object.values(tiers).filter(Boolean).forEach(b => samples.push(b));
+
+  const traces = [];
+  const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+  const tNames = ['Critical','Poor','Fair','Good'];
+
+  samples.forEach((b, i) => {
+    const baseHI = b.hi || [null,null,null,null,null];
+    const scenHI = scenarioHICache[b.id] || baseHI;
+
+    traces.push({
+      x: YEARS, y: baseHI, name: `${tNames[i]} (Base)`,
+      mode: 'lines', line: { color: colors[i], width: 1.5, dash: 'dot' }, opacity: 0.5
+    });
+    traces.push({
+      x: YEARS, y: scenHI, name: `${tNames[i]} (Scenario)`,
+      mode: 'lines+markers', line: { color: colors[i], width: 2.5 },
+      marker: { size: 5 }
+    });
+  });
+
+  const layout = {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { l: 40, r: 10, t: 10, b: 60 },
+    xaxis: { color: '#8895ad', tickfont: { size: 11 }, gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { color: '#8895ad', range: [0, 102], tickfont: { size: 11 }, gridcolor: 'rgba(255,255,255,0.05)', title: { text: 'HI', font: { size: 11, color: '#8895ad' } } },
+    legend: { font: { size: 10, color: '#8895ad' }, bgcolor: 'transparent', orientation: 'h', x: 0.5, xanchor: 'center', y: -0.2 },
+    font: { family: 'system-ui, sans-serif' },
+  };
+  Plotly.react('scenario-traj-chart', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+function renderScenarioShiftChart() {
+  // Show HI shift (scenario - base) at 2029 across 50 sampled bridges
+  const sample = allBridges.filter((b, i) => i % Math.ceil(allBridges.length / 60) === 0).slice(0, 60);
+  const ids = sample.map(b => b.id.slice(-6));
+  const deltas = sample.map(b => {
+    const base29 = b.hi ? b.hi[4] : null;
+    const scen29 = scenarioHICache[b.id] ? scenarioHICache[b.id][4] : null;
+    return (scen29 !== null && base29 !== null) ? scen29 - base29 : 0;
+  });
+
+  const traces = [{
+    x: ids, y: deltas, type: 'bar',
+    marker: { color: deltas.map(d => d >= 0 ? '#22c55e' : d > -10 ? '#eab308' : d > -20 ? '#f97316' : '#ef4444') }
+  }];
+
+  const layout = {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    margin: { l: 40, r: 10, t: 10, b: 60 },
+    xaxis: { color: '#8895ad', tickfont: { size: 9 }, gridcolor: 'rgba(255,255,255,0.05)', tickangle: -45 },
+    yaxis: { color: '#8895ad', tickfont: { size: 11 }, gridcolor: 'rgba(255,255,255,0.05)', zeroline: true, zerolinecolor: 'rgba(255,255,255,0.2)', title: { text: 'HI Shift (2029)', font: { size: 11, color: '#8895ad' } } },
+    shapes: [{ type: 'line', x0: -0.5, x1: ids.length - 0.5, y0: 0, y1: 0, line: { color: 'rgba(255,255,255,0.2)', width: 1 } }],
+    font: { family: 'system-ui, sans-serif' },
+  };
+  Plotly.react('scenario-shift-chart', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+/* ════════════════════════════════════════════════════
+   TAB NAVIGATION
+════════════════════════════════════════════════════ */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
+
+  if (name === 'map') {
+    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 100);
+  }
+  if (name === 'compare') {
+    renderCompareCards();
+  }
+  if (name === 'scenario') {
+    updateScenarioDisplay();
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   AUTOCOMPLETE / SEARCH
+════════════════════════════════════════════════════ */
+let autocompleteList = null;
+function initAutocomplete() {
+  const input = document.getElementById('compare-input');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { clearAutocomplete(); return; }
+    const matches = allBridges.filter(b =>
+      b.id.toLowerCase().includes(q) ||
+      (b.facility && b.facility.toLowerCase().includes(q)) ||
+      (b.county && b.county.toLowerCase().includes(q))
+    ).slice(0, 8);
+    showAutocomplete(matches, input);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const q = input.value.trim();
+      const b = bridgeIndex[q] || allBridges.find(x => x.id.toLowerCase() === q.toLowerCase());
+      if (b) { addToComparison(b.id); input.value = ''; clearAutocomplete(); }
+    }
+  });
+}
+
+function showAutocomplete(matches, input) {
+  clearAutocomplete();
+  if (!matches.length) return;
+  autocompleteList = document.createElement('div');
+  autocompleteList.style.cssText = `position:absolute;z-index:9999;background:var(--surface1);border:1px solid var(--border-bright);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);max-height:240px;overflow-y:auto;width:240px`;
+  const rect = input.getBoundingClientRect();
+  autocompleteList.style.top = (rect.bottom + 4) + 'px';
+  autocompleteList.style.left = rect.left + 'px';
+
+  for (const b of matches) {
+    const opt = document.createElement('div');
+    opt.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)';
+    opt.innerHTML = `<span style="color:var(--accent);font-weight:600">${b.id}</span> <span style="color:var(--text2);font-size:11px">${(b.facility||b.feature||'').slice(0,30)}</span><br><span style="color:var(--text3);font-size:10px">${b.county}</span>`;
+    opt.addEventListener('mouseenter', () => opt.style.background = 'var(--surface2)');
+    opt.addEventListener('mouseleave', () => opt.style.background = '');
+    opt.addEventListener('click', () => {
+      addToComparison(b.id);
+      input.value = '';
+      clearAutocomplete();
+    });
+    autocompleteList.appendChild(opt);
+  }
+  document.body.appendChild(autocompleteList);
+}
+
+function clearAutocomplete() {
+  if (autocompleteList) { autocompleteList.remove(); autocompleteList = null; }
+}
+document.addEventListener('click', (e) => {
+  if (autocompleteList && !autocompleteList.contains(e.target)) clearAutocomplete();
+});
+
+/* ════════════════════════════════════════════════════
+   WIRE-UP EVENTS
+════════════════════════════════════════════════════ */
+function wireUpEvents() {
+  // Tab nav
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // Panel close
+  document.getElementById('panel-close-btn').addEventListener('click', () => {
+    document.getElementById('bridge-panel').classList.remove('open');
+    openPanelBridge = null;
+  });
+
+  // Year slider
+  const yearSlider = document.getElementById('year-slider');
+  yearSlider.addEventListener('input', () => {
+    selectedYearIdx = parseInt(yearSlider.value);
+    document.getElementById('year-display').textContent = YEARS[selectedYearIdx];
+    updateMapColors();
+    if (openPanelBridge && document.getElementById('bridge-panel').classList.contains('open')) {
+      showBridgePanel(openPanelBridge);
+    }
+  });
+
+  // Metric select
+  document.getElementById('metric-select').addEventListener('change', (e) => {
+    activeMetric = e.target.value;
+    updateMapColors();
+  });
+
+  // Tier filters
+  document.querySelectorAll('.tier-filter').forEach(cb => {
+    cb.addEventListener('change', () => {
+      visibleTiers = new Set([...document.querySelectorAll('.tier-filter:checked')].map(x => x.value));
+      updateMapColors();
+    });
+  });
+
+  // Compare controls
+  document.getElementById('compare-add-btn').addEventListener('click', () => {
+    const q = document.getElementById('compare-input').value.trim();
+    const b = bridgeIndex[q] || allBridges.find(x => x.id.toLowerCase() === q.toLowerCase());
+    if (b) { addToComparison(b.id); document.getElementById('compare-input').value = ''; clearAutocomplete(); }
+  });
+  document.getElementById('compare-clear-btn').addEventListener('click', () => {
+    comparisonBridges = [];
+    renderCompareCards();
+  });
+
+  // Preset buttons
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setPreset(btn.dataset.preset);
+    });
+  });
+
+  // Sliders
+  const sliderMap = { 'sl-climate': 'climate', 'sl-traffic': 'traffic', 'sl-ft': 'ft', 'sl-precip': 'precip', 'sl-temp': 'temp' };
+  const valMap = { 'sl-climate': v => v.toFixed(1)+'×', 'sl-traffic': v => v.toFixed(1)+'%/yr', 'sl-ft': v => v.toFixed(1)+'×', 'sl-precip': v => v.toFixed(1)+'×', 'sl-temp': v => (v>=0?'+':'')+v.toFixed(1)+'°C' };
+
+  Object.keys(sliderMap).forEach(slId => {
+    const sl = document.getElementById(slId);
+    sl.addEventListener('input', () => {
+      const val = parseFloat(sl.value);
+      scenarioParams[sliderMap[slId]] = val;
+      document.getElementById('val-' + slId.slice(3)).textContent = valMap[slId](val);
+      // Mark as custom
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === 'custom'));
+      // Debounced update
+      clearTimeout(sl._debounce);
+      sl._debounce = setTimeout(() => {
+        if (document.getElementById('tab-scenario').classList.contains('active')) {
+          updateScenarioDisplay();
+        }
+      }, 150);
+    });
+  });
+
+  // Apply to map
+  document.getElementById('apply-scenario-btn').addEventListener('click', () => {
+    applyScenarioToAll();
+    scenarioMode = true;
+    switchTab('map');
+    updateMapColors();
+  });
+
+  // Reset
+  document.getElementById('reset-scenario-btn').addEventListener('click', () => {
+    scenarioMode = false;
+    scenarioHICache = {};
+    scenarioParams = { ...PRESETS.baseline };
+    syncSliders();
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === 'baseline'));
+    updateScenarioDisplay();
+    updateMapColors();
+  });
+
+  initAutocomplete();
+}
+
+/* ════════════════════════════════════════════════════
+   BOOTSTRAP
+════════════════════════════════════════════════════ */
+async function init() {
+  try {
+    const resp = await fetch('dashboard_data.json');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    allBridges = data.bridges;
+    for (const b of allBridges) bridgeIndex[b.id] = b;
+
+    document.getElementById('loading').style.display = 'none';
+
+    initMap();
+    updateHeaderStats(0);
+    wireUpEvents();
+
+    // Initial scenario baseline
+    applyScenarioToAll();
+  } catch (err) {
+    document.getElementById('loading').innerHTML = `
+      <div style="font-size:28px">⚠️</div>
+      <div style="color:var(--critical);font-size:14px;font-weight:600">Failed to load dashboard data</div>
+      <div style="color:var(--text2);font-size:13px;max-width:400px;text-align:center;margin-top:8px">
+        Make sure <code>dashboard_data.json</code> is in the same directory and you are serving via
+        <code>python serve_dashboard.py</code> (not opening the file directly in a browser).
+      </div>
+      <div style="color:var(--text3);font-size:12px;margin-top:8px">${err.message}</div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
