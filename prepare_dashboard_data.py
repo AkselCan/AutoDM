@@ -15,6 +15,7 @@ from pathlib import Path
 BASE = Path(__file__).parent
 DATA = BASE / "data"
 RESULTS = BASE / "results"
+NOTEBOOKS = BASE / "notebooks"
 
 ELEMENT_NAMES = {
     10: "Wearing Surface",
@@ -111,14 +112,17 @@ def safe_str(v, default=""):
     return str(v).strip()
 
 
-print("Loading FL NBI data …")
-available_fl = pd.read_csv(DATA / "NEW_NBE_and_NBI_FL.csv", nrows=0).columns.tolist()
-use_fl = [c for c in KEY_NBI if c in available_fl]
+print("Loading OK NBI data …")
+ok_nbi_path = NOTEBOOKS / "NEW_NBE_and_NBI_OK.csv"
+available_ok = pd.read_csv(ok_nbi_path, nrows=0).columns.tolist()
+use_ok = [c for c in KEY_NBI if c in available_ok]
 fl_df = pd.read_csv(
-    DATA / "NEW_NBE_and_NBI_FL.csv",
-    usecols=use_fl, dtype=str, low_memory=False
+    ok_nbi_path,
+    usecols=use_ok, dtype=str, low_memory=False
 )
-fl_df['STRUCTURE_NUMBER'] = fl_df['STRUCTURE_NUMBER'].str.strip()
+fl_df['STRUCTURE_NUMBER'] = fl_df['STRUCTURE_NUMBER'].str.strip().apply(
+    lambda x: str(int(float(x))) if pd.notna(x) and x != '' else x
+)
 fl_df['YEAR'] = fl_df['YEAR'].str.strip()
 
 # Keep most-recent year per bridge
@@ -126,14 +130,14 @@ fl_df = (fl_df
          .sort_values('YEAR', ascending=False)
          .drop_duplicates(subset='STRUCTURE_NUMBER', keep='first'))
 
-print(f"  FL unique bridges: {len(fl_df)}")
+print(f"  OK unique bridges: {len(fl_df)}")
 
 print("Loading bridge criticality summary …")
-sum_df = pd.read_csv(RESULTS / "bridge_criticality_summary_2025_2029.csv", dtype=str)
+sum_df = pd.read_csv(NOTEBOOKS / "bridge_criticality_summary_2025_2029.csv", dtype=str)
 sum_df['STRUCTURE_NUMBER'] = sum_df['STRUCTURE_NUMBER'].str.strip()
 
 print("Loading element-level HI forecasts …")
-elem_df = pd.read_csv(RESULTS / "element_criticality_forecast_2025_2029.csv", dtype=str)
+elem_df = pd.read_csv(NOTEBOOKS / "element_criticality_forecast_2025_2029.csv", dtype=str)
 elem_df['STRUCTURE_NUMBER'] = elem_df['STRUCTURE_NUMBER'].str.strip()
 elem_df['ELEMENT_NUMBER'] = elem_df['ELEMENT_NUMBER'].str.strip()
 
@@ -147,8 +151,8 @@ lon_col = 'NBI_17 - Longitude (decimal)'
 merged = merged[merged[lat_col].notna() & merged[lon_col].notna()]
 merged['_lat'] = pd.to_numeric(merged[lat_col], errors='coerce')
 merged['_lon'] = pd.to_numeric(merged[lon_col], errors='coerce')
-merged = merged[merged['_lat'].between(24, 32) & merged['_lon'].between(-88, -79)]
-print(f"  Bridges with valid FL coordinates: {len(merged)}")
+merged = merged[merged['_lat'].between(33.6, 37.1) & merged['_lon'].between(-103.1, -94.4)]
+print(f"  Bridges with valid OK coordinates: {len(merged)}")
 
 # Build per-bridge element lookup
 print("Building element lookup …")
