@@ -4,9 +4,9 @@ georgia/
 oklahoma/
 texas/
 
-# Ignore CSVs and large data files anywhere (uncomment if needed)
-# *.csv
-# *.csv.gz
+# Never commit CSVs: users bring their own data (see README)
+*.csv
+*.csv.gz
 
 # Jupyter Notebook checkpoints and outputs
 .ipynb_checkpoints/
@@ -30,7 +30,8 @@ Protege-**/
 *.bat
 *.l4j.ini
 
-# Large data files exceeding GitHub 100MB limit
-data/NBE_and_NBI_TX.csv
-data/NEW_NBE_and_NBI_FL.csv
-data/NEW_NBE_and_NBI_OK.csv
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
