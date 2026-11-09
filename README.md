@@ -2,11 +2,13 @@
 
 AutoDM forecasts element-level bridge health for 2025–2029 with a temporal graph neural network, scores maintenance criticality, and shows the results on an interactive map.
 
+AutoDM is developed at the University of Oklahoma with support from the U.S. DOT-funded IBT/ABC-UTC at Florida International University. See Acknowledgments.
+
 **AutoDM does not include a dataset.** You bring your own National Bridge Inventory (NBI) and National Bridge Elements (NBE) data. All `*.csv` files are ignored by git, so your data stays on your machine.
 
-<!-- Demo GIF: uncomment after adding the file.
-![AutoDM map view](docs/images/map-view.gif)
--->
+<img width="2529" height="1348" alt="GIF6AutoDM" src="https://github.com/user-attachments/assets/dcd179ff-7c51-4b5d-a2b9-d6b6a91e03be" />
+
+
 
 ```
 Your NBE + NBI CSV files
@@ -16,6 +18,7 @@ data/my_state_merged.csv
    |   Step 3: notebooks/forecasting_arranged.ipynb
    v
 results/*.csv and models/*.pt
+
    |   Step 4: prepare_dashboard_data.py
    v
 dashboard_data.json
@@ -39,6 +42,7 @@ Interactive dashboard in your browser
 - [Troubleshooting](#troubleshooting)
 - [Repository layout](#repository-layout)
 - [Resources](#resources)
+- [Acknowledgments](#acknowledgments)
 
 ## Quick look without data
 
@@ -247,9 +251,10 @@ The dashboard has three tabs. It rates each bridge from its health index: **Crit
 - **Apply to Map** carries the scenario over to the map, and **Reset to Baseline** clears it. Scenarios change Bridge Avg HI and Worst Element HI, but not Criticality Score or the per-element values in the bridge panel.
 - Scenarios are a quick estimate that scales the forecast's year-over-year HI drops in the browser. They do not re-run the model.
 
-<!-- Screenshot or GIF: uncomment after adding the file.
-![Scenario comparison](docs/images/scenarios.png)
--->
+<img width="2529" height="1348" alt="GIF2AutoDM" src="https://github.com/user-attachments/assets/8a817555-3aed-4981-83ca-3eb007f8bf4c" />
+
+<img width="2529" height="1348" alt="GIF3AutoDM" src="https://github.com/user-attachments/assets/d7ec6e0f-95fb-4b47-bd7d-9d1c74105db5" />
+
 
 The dashboard has no export or download feature, and comparisons and scenarios are lost when the page reloads.
 
@@ -373,3 +378,10 @@ These apply to `notebooks/forecasting_arranged.ipynb` and affect how you should 
 
 - [Literature review progress](https://docs.google.com/spreadsheets/d/1FBF4gexEheqrDxaIwI9gxIBC1Uaw7EUmpFTdzaxkVrw/edit?usp=sharing): reviewed papers, key findings, and connections to this project.
 - [FHWA Bridge Management Guide (PDF)](https://www.fhwa.dot.gov/bridge/mtguide.pdf): U.S. Federal Highway Administration manual on bridge management practices.
+
+## Acknowledgments
+AutoDM is developed by Aksel Can Sozudogru at the University of Oklahoma under the guidance of principal investigators Dr. Kofi Asare, Dr. Matthew Reyes, and Dr. Somik Ghosh.
+
+This project is sponsored by the Innovative Bridge Technologies/Accelerated Bridge Construction University Transportation Center (IBT/ABC-UTC), a U.S. Department of Transportation University Transportation Center led by Florida International University.
+
+The contents of this repository reflect the views of the authors, who are responsible for the facts and the accuracy of the information presented.
