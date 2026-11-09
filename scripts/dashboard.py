@@ -6,16 +6,18 @@ import plotly.graph_objects as go
 from neo4j import GraphDatabase
 import google.generativeai as genai
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
 # --- CONFIGURATION ---
 st.set_page_config(page_title="Bridge Maintenance AI Dashboard", layout="wide")
 
-# SECRETS (Ideally, put these in .streamlit/secrets.toml)
-# For now, replace these placeholders:
-NEO4J_URI = "bolt://localhost:7687"
-NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "ILoveBridges" # <--- !!! CHANGE THIS !!!
-GOOGLE_API_KEY = "AIzaSyDbL0gvpBFd9W20mSzaLKfBP73uPZL_Ca8" # <--- !!! CHANGE THIS !!!
+# Settings come from a .env file in the repository root (see .env.example).
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 
 # Configure Gemini
 if GOOGLE_API_KEY:

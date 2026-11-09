@@ -2,20 +2,29 @@
 prepare_dashboard_data.py
 =========================
 Preprocesses bridge NBI + element forecast CSVs into a compact dashboard_data.json.
-Run once before opening the dashboard:
+Run after the forecasting notebook and before opening the dashboard:
     python prepare_dashboard_data.py
+    python prepare_dashboard_data.py --input data/another_file.csv
 """
 
+import argparse
 import json
 import math
+import re
+from datetime import date
 import pandas as pd
 import numpy as np
 from pathlib import Path
 
 BASE = Path(__file__).parent
-DATA = BASE / "data"
 RESULTS = BASE / "results"
-NOTEBOOKS = BASE / "notebooks"
+
+parser = argparse.ArgumentParser(description="Build dashboard_data.json from the forecast results.")
+parser.add_argument(
+    "--input", type=Path, default=BASE / "data" / "my_state_merged.csv",
+    help="merged NBE + NBI CSV (default: data/my_state_merged.csv)",
+)
+args = parser.parse_args()
 
 ELEMENT_NAMES = {
     10: "Wearing Surface",
@@ -111,38 +120,49 @@ def safe_str(v, default=""):
         return default
     return str(v).strip()
 
+def normalize_bridge_id(v):
+    """Match the notebook: numeric IDs lose padding and formatting, others stay as text."""
+    if pd.isna(v):
+        return v
+    v = str(v).strip()
+    try:
+        return str(int(float(v)))
+    except (ValueError, OverflowError):
+        return v
 
-print("Loading OK NBI data …")
-ok_nbi_path = NOTEBOOKS / "NEW_NBE_and_NBI_OK.csv"
-available_ok = pd.read_csv(ok_nbi_path, nrows=0).columns.tolist()
-use_ok = [c for c in KEY_NBI if c in available_ok]
-fl_df = pd.read_csv(
-    ok_nbi_path,
-    usecols=use_ok, dtype=str, low_memory=False
+def within_main_extent(values, margin=2.0):
+    """Drop stray coordinates more than `margin` degrees beyond the central 98% of bridges."""
+    low, high = values.quantile([0.01, 0.99])
+    return values.between(low - margin, high + margin)
+
+
+print(f"Loading NBI data from {args.input} …")
+available = pd.read_csv(args.input, nrows=0).columns.tolist()
+nbi_df = pd.read_csv(
+    args.input,
+    usecols=[c for c in KEY_NBI if c in available], dtype=str, low_memory=False
 )
-fl_df['STRUCTURE_NUMBER'] = fl_df['STRUCTURE_NUMBER'].str.strip().apply(
-    lambda x: str(int(float(x))) if pd.notna(x) and x != '' else x
-)
-fl_df['YEAR'] = fl_df['YEAR'].str.strip()
+nbi_df['STRUCTURE_NUMBER'] = nbi_df['STRUCTURE_NUMBER'].apply(normalize_bridge_id)
+nbi_df['YEAR'] = nbi_df['YEAR'].str.strip()
 
 # Keep most-recent year per bridge
-fl_df = (fl_df
-         .sort_values('YEAR', ascending=False)
-         .drop_duplicates(subset='STRUCTURE_NUMBER', keep='first'))
+nbi_df = (nbi_df
+          .sort_values('YEAR', ascending=False)
+          .drop_duplicates(subset='STRUCTURE_NUMBER', keep='first'))
 
-print(f"  OK unique bridges: {len(fl_df)}")
+print(f"  Unique bridges: {len(nbi_df)}")
 
 print("Loading bridge criticality summary …")
-sum_df = pd.read_csv(NOTEBOOKS / "bridge_criticality_summary_2025_2029.csv", dtype=str)
-sum_df['STRUCTURE_NUMBER'] = sum_df['STRUCTURE_NUMBER'].str.strip()
+sum_df = pd.read_csv(RESULTS / "bridge_criticality_summary_2025_2029.csv", dtype=str)
+sum_df['STRUCTURE_NUMBER'] = sum_df['STRUCTURE_NUMBER'].apply(normalize_bridge_id)
 
 print("Loading element-level HI forecasts …")
-elem_df = pd.read_csv(NOTEBOOKS / "element_criticality_forecast_2025_2029.csv", dtype=str)
-elem_df['STRUCTURE_NUMBER'] = elem_df['STRUCTURE_NUMBER'].str.strip()
+elem_df = pd.read_csv(RESULTS / "element_criticality_forecast_2025_2029.csv", dtype=str)
+elem_df['STRUCTURE_NUMBER'] = elem_df['STRUCTURE_NUMBER'].apply(normalize_bridge_id)
 elem_df['ELEMENT_NUMBER'] = elem_df['ELEMENT_NUMBER'].str.strip()
 
 # Merge
-merged = fl_df.merge(sum_df, on='STRUCTURE_NUMBER', how='inner')
+merged = nbi_df.merge(sum_df, on='STRUCTURE_NUMBER', how='inner')
 print(f"  Bridges with criticality scores: {len(merged)}")
 
 # Filter out bridges with invalid lat/lon
@@ -151,8 +171,8 @@ lon_col = 'NBI_17 - Longitude (decimal)'
 merged = merged[merged[lat_col].notna() & merged[lon_col].notna()]
 merged['_lat'] = pd.to_numeric(merged[lat_col], errors='coerce')
 merged['_lon'] = pd.to_numeric(merged[lon_col], errors='coerce')
-merged = merged[merged['_lat'].between(33.6, 37.1) & merged['_lon'].between(-103.1, -94.4)]
-print(f"  Bridges with valid OK coordinates: {len(merged)}")
+merged = merged[within_main_extent(merged['_lat']) & within_main_extent(merged['_lon'])]
+print(f"  Bridges with valid coordinates: {len(merged)}")
 
 # Build per-bridge element lookup
 print("Building element lookup …")
@@ -202,7 +222,7 @@ for _, row in merged.iterrows():
         "feature": safe_str(row.get('NBI_6A - Features Intersected')),
         "location": safe_str(row.get('NBI_9 - Location')),
         "county": safe_str(row.get('NBI_3 - County Name')),
-        "state": safe_str(row.get('STATE_NAME', 'Florida')).replace('12 - ', ''),
+        "state": re.sub(r'^\d+\s*-\s*', '', safe_str(row.get('STATE_NAME'))),
         # Physical
         "year_built": safe_int(row.get('NBI_27 - Year Built')),
         "year_recon": safe_int(row.get('NBI_106 - Year Reconstructed')),
@@ -257,7 +277,7 @@ for b in bridges:
         risk_counts[t] += 1
 
 output = {
-    "generated": "2026-04-27",
+    "generated": date.today().isoformat(),
     "total_bridges": len(bridges),
     "risk_counts": risk_counts,
     "years": [2025, 2026, 2027, 2028, 2029],

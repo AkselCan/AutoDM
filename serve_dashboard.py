@@ -6,9 +6,10 @@ This solves CORS issues when opening HTML files directly.
 Usage:
     python serve_dashboard.py
     
-Then open http://localhost:8000 in your browser.
+The dashboard opens in your browser and is only reachable from this computer.
 """
 
+import errno
 import http.server
 import socketserver
 import os
@@ -27,7 +28,8 @@ if __name__ == '__main__':
     os.chdir(Path(__file__).parent)
     
     try:
-        with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
+        # Bind to this computer only: the served folder can contain your raw data.
+        with socketserver.TCPServer(("127.0.0.1", PORT), MyHTTPRequestHandler) as httpd:
             url = f"http://localhost:{PORT}/bridge_criticality_interactive_dashboard.html"
             print(f"Bridge Health Intelligence Dashboard")
             print(f"Server : http://localhost:{PORT}")
@@ -48,8 +50,8 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("\n✓ Server stopped")
     except OSError as e:
-        if e.errno == 48:  # Port already in use
+        if e.errno in (errno.EADDRINUSE, 10048):  # 10048 is the Windows socket error
             print(f"❌ Port {PORT} is already in use")
-            print(f"   Try: python serve_dashboard.py  (or change PORT variable)")
+            print(f"   Stop the other server, or change PORT in this file")
         else:
             print(f"❌ Error: {e}")

@@ -1,10 +1,12 @@
 import json
+import os
 import pickle
 from pathlib import Path
 import warnings
 
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
@@ -15,9 +17,10 @@ DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # --- NEO4J CONFIGURATION ---
-NEO4J_URI = "bolt://localhost:7687"
-NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "MikalBridges"
+load_dotenv(BASE_DIR / ".env")
+NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASSWORD = os.environ["NEO4J_PASSWORD"]
 
 print("="*70)
 print("COMPREHENSIVE BRIDGE GRAPH DATA EXTRACTION - ALL FEATURES")

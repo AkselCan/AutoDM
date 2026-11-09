@@ -816,7 +816,7 @@ function updateHeaderStats(yrIdx) {
    MAP INIT
 ════════════════════════════════════════════════════ */
 function initMap() {
-  leafletMap = L.map('map', { zoomControl: true, preferCanvas: true }).setView([27.5, -82.5], 7);
+  leafletMap = L.map('map', { zoomControl: true, preferCanvas: true }).setView([39.5, -98.35], 4);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap',
@@ -863,6 +863,9 @@ function initMap() {
   }
 
   leafletMap.addLayer(clusterGroup);
+
+  const bounds = clusterGroup.getBounds();
+  if (bounds.isValid()) leafletMap.fitBounds(bounds.pad(0.05), { maxZoom: 12 });
 }
 
 function updateMapColors() {
@@ -1518,7 +1521,12 @@ async function init() {
     allBridges = data.bridges;
     for (const b of allBridges) bridgeIndex[b.id] = b;
 
-    document.getElementById('loading').style.display = 'none';
+    // The updated criticality pipeline scores 0-100; the views below expect 0-1.
+    if (allBridges.some(b => b.crit_score > 1)) {
+      for (const b of allBridges) {
+        if (b.crit_score !== null && b.crit_score !== undefined) b.crit_score /= 100;
+      }
+    }
 
     initMap();
     updateHeaderStats(0);
@@ -1526,6 +1534,9 @@ async function init() {
 
     // Initial scenario baseline
     applyScenarioToAll();
+
+    // Hidden last so a startup failure still shows the error message below.
+    document.getElementById('loading').style.display = 'none';
   } catch (err) {
     document.getElementById('loading').innerHTML = `
       <div style="font-size:28px">⚠️</div>
@@ -1533,6 +1544,7 @@ async function init() {
       <div style="color:var(--text2);font-size:13px;max-width:400px;text-align:center;margin-top:8px">
         Make sure <code>dashboard_data.json</code> is in the same directory and you are serving via
         <code>python serve_dashboard.py</code> (not opening the file directly in a browser).
+        You also need an internet connection for the map and chart libraries.
       </div>
       <div style="color:var(--text3);font-size:12px;margin-top:8px">${err.message}</div>`;
   }

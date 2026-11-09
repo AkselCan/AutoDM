@@ -4,6 +4,10 @@ AutoDM forecasts element-level bridge health for 2025–2029 with a temporal gra
 
 **AutoDM does not include a dataset.** You bring your own National Bridge Inventory (NBI) and National Bridge Elements (NBE) data. All `*.csv` files are ignored by git, so your data stays on your machine.
 
+<!-- Demo GIF: uncomment after adding the file.
+![AutoDM map view](docs/images/map-view.gif)
+-->
+
 ```
 Your NBE + NBI CSV files
    |   Step 2: merge into one file
@@ -30,10 +34,10 @@ Interactive dashboard in your browser
 - [Step 5: Open the dashboard](#step-5-open-the-dashboard)
 - [Using the dashboard](#using-the-dashboard)
 - [Optional components](#optional-components)
+- [How the scores work](#how-the-scores-work)
 - [Known limitations](#known-limitations)
 - [Troubleshooting](#troubleshooting)
 - [Repository layout](#repository-layout)
-- [Other documentation](#other-documentation)
 - [Resources](#resources)
 
 ## Quick look without data
@@ -47,8 +51,6 @@ python serve_dashboard.py
 ```
 
 On macOS or Linux, use `python3` if `python` is not found.
-
-The map opens over Florida, so zoom out and pan to Oklahoma to see the bridges. Use the **Bridge Avg HI** color metric for this sample. Its criticality scores are on a 0–100 scale, but the dashboard expects 0–1, so the **Criticality Score** metric shows every bridge as critical.
 
 ## Step 1: Install
 
@@ -171,27 +173,13 @@ Large states need a lot of memory. A Florida-sized dataset (about 43,000 element
    jupyter notebook forecasting_arranged.ipynb
    ```
 
-2. In section **0) Setup**, point `CSV_PATH` at your file:
+2. If your merged file is not `data/my_state_merged.csv`, update `CSV_PATH` in section **0) Setup**.
 
-   ```python
-   CSV_PATH = "../data/my_state_merged.csv"
-   ```
+   If your data does not cover 2020–2024, change `YEARS` there too. Using a different *number* of years also requires changing the train and test indices in sections 5 and 6.
 
-   If your data does not cover 2020–2024, also change `YEARS` here. Using a different *number* of years also requires changing the train and test indices in sections 5 and 6.
+   The forecast years 2025–2029 are written into the cell that starts with `scenario = {`, the later cells that use `HI_pred_2025` through `HI_pred_2029`, the matching names and `years` list in `prepare_dashboard_data.py`, and `YEARS` in the dashboard HTML. Changing them means updating all of those.
 
-   The forecast years 2025–2029 are written into the cell that starts with `scenario = {`, the later cells that use `HI_pred_2025` through `HI_pred_2029`, `prepare_dashboard_data.py` (lines 171–175 and 263), and `YEARS` in the dashboard HTML. Changing them means updating all of those.
-
-3. Run the cells in this order. **Do not use Run All**, because one cell depends on a cell further down the notebook.
-
-   | Order | Cells | Result |
-   |---|---|---|
-   | 1 | Sections 0–7, from the top through the cell that starts with `scenario = {` | Trains the model and forecasts 2025–2029 |
-   | 2 | The cell that starts with `# Build bridge_hazards_dict and bridge_meta_dict`, located after section 10 | Builds the climate and traffic inputs |
-   | 3 | Back up to the cell that starts with `from bridge_criticality_pipeline import`, then the two cells after it | Scores criticality and saves the results |
-   | 4 | *Optional:* the cell that starts with `# Advanced filtering utility` | Saves `high_priority_bridges.csv` |
-   | 5 | *Optional:* section 8 | Plots trajectories and the 2029 distribution |
-
-   Skip the last cell in the notebook, which starts with `import pandas as pd` and loops over a `("TX", "NEW_NBE_and_NBI_OK.csv")` entry. It is a statistics check for one specific local file. Sections 9 and 10 are older dashboard notes, so ignore their instructions. Apart from the optional filtering cell, their code cells only print information and can be skipped.
+3. Run all cells from top to bottom. The notebook trains the model, forecasts 2025–2029, scores criticality, and saves the results.
 
 4. Check that these files were written:
 
@@ -200,21 +188,12 @@ Large states need a lot of memory. A Florida-sized dataset (about 43,000 element
    | `results/element_hi_forecast_2025_2029_delta_monotonic_scenario_FLO.csv` | Element HI forecast |
    | `results/element_criticality_forecast_2025_2029.csv` | Element forecast with criticality scores |
    | `results/bridge_criticality_summary_2025_2029.csv` | One row per bridge |
-   | `results/high_priority_bridges.csv` | Top 20 bridges by criticality, if you ran the optional cell |
+   | `results/high_priority_bridges.csv` | Top 20 bridges by criticality |
    | `models/temporal_gnn_bridge_hi_delta_monotonic.pt` | Trained model |
 
 The notebook always trains a new model. The checkpoints in `models/` are not reloaded and only fit the dataset they were trained on.
 
 ## Step 4: Build the dashboard data
-
-`prepare_dashboard_data.py` currently has one dataset's paths and map bounds written in. Make these four edits, then run it:
-
-| Line | Current code | Change to |
-|---|---|---|
-| 116 | `ok_nbi_path = NOTEBOOKS / "NEW_NBE_and_NBI_OK.csv"` | `ok_nbi_path = DATA / "my_state_merged.csv"` |
-| 136 | `pd.read_csv(NOTEBOOKS / "bridge_criticality_summary_2025_2029.csv", dtype=str)` | Replace `NOTEBOOKS` with `RESULTS` |
-| 140 | `pd.read_csv(NOTEBOOKS / "element_criticality_forecast_2025_2029.csv", dtype=str)` | Replace `NOTEBOOKS` with `RESULTS` |
-| 154 | `.between(33.6, 37.1)` and `.between(-103.1, -94.4)` | Your state's latitude and longitude ranges. Bridges outside them are dropped |
 
 From the repository root:
 
@@ -222,11 +201,13 @@ From the repository root:
 python prepare_dashboard_data.py
 ```
 
-This replaces `dashboard_data.json` with your bridges. To center the map on your state, also edit `setView([27.5, -82.5], 7)` in `bridge_criticality_interactive_dashboard.html`, on line 819.
+This reads `data/my_state_merged.csv` and the criticality CSVs in `results/`, then replaces `dashboard_data.json` with your bridges. If your merged file has a different name, pass it in:
 
-> **This script needs numeric bridge IDs.** It converts each one with `int(float(x))` and stops with a `ValueError` on an ID such as `99AA99`.
+```bash
+python prepare_dashboard_data.py --input data/another_file.csv
+```
 
-> **Before committing:** following these steps changes tracked files, which then show up in `git status`: `dashboard_data.json`, `models/temporal_gnn_bridge_hi_delta_monotonic.pt`, `notebooks/forecasting_arranged.ipynb`, and `prepare_dashboard_data.py`, plus the dashboard HTML if you edited `setView`. Leave them out of your commits unless you mean to publish them.
+> **Before committing:** following these steps changes tracked files, which then show up in `git status`: `dashboard_data.json`, `models/temporal_gnn_bridge_hi_delta_monotonic.pt`, and `notebooks/forecasting_arranged.ipynb`. Leave them out of your commits unless you mean to publish them.
 
 ## Step 5: Open the dashboard
 
@@ -234,7 +215,7 @@ This replaces `dashboard_data.json` with your bridges. To center the map on your
 python serve_dashboard.py
 ```
 
-This serves the repository on port 8000 and opens this page in your browser:
+This serves the repository on port 8000, reachable only from your own computer, and opens this page in your browser:
 
 `http://localhost:8000/bridge_criticality_interactive_dashboard.html`
 
@@ -257,10 +238,18 @@ The dashboard has three tabs. It rates each bridge from its health index: **Crit
 - Search by bridge ID, facility, or county, then choose a suggestion. The Add button and Enter only accept an exact bridge ID.
 - Each bridge shows its 2025 and 2029 HI and the change between them, along with a chart of its bridge average and up to seven worst elements.
 
+<!-- Screenshot: uncomment after adding the file.
+![Comparing bridges](docs/images/compare.png)
+-->
+
 **Scenarios**
 - Choose a preset (Baseline, Climate Stress, Heavy Traffic, Extreme Weather, Optimistic) or set your own values with the sliders.
 - **Apply to Map** carries the scenario over to the map, and **Reset to Baseline** clears it. Scenarios change Bridge Avg HI and Worst Element HI, but not Criticality Score or the per-element values in the bridge panel.
 - Scenarios are a quick estimate that scales the forecast's year-over-year HI drops in the browser. They do not re-run the model.
+
+<!-- Screenshot or GIF: uncomment after adding the file.
+![Scenario comparison](docs/images/scenarios.png)
+-->
 
 The dashboard has no export or download feature, and comparisons and scenarios are lost when the page reloads.
 
@@ -270,24 +259,39 @@ You don't need any of these to run the steps above.
 
 ### Forecast with uncertainty
 
-`notebooks/forecasting_arranged_mc_dropout_updated.ipynb` extends the main notebook with Monte Carlo dropout and baseline comparisons. It uses `scripts/bridge_criticality_pipeline_updated.py`, which scores criticality from 0 to 100. The dashboard's criticality views expect 0–1, so use the main notebook if you want to feed the dashboard. This notebook overwrites the main notebook's result CSVs and model checkpoint, so re-run the main notebook before Step 4 if you have run this one.
+`notebooks/forecasting_arranged_mc_dropout_updated.ipynb` extends the main notebook with Monte Carlo dropout and baseline comparisons. It uses `scripts/bridge_criticality_pipeline_updated.py`, which scores criticality from 0 to 100. The dashboard converts that scale automatically. This notebook overwrites the main notebook's result CSVs and model checkpoint, so Step 4 uses whichever notebook you ran last.
 
 `notebooks/forecasting.ipynb` is an early baseline kept for reference. It does not run from top to bottom.
 
-### Static graph model
+### Neo4j and Gemini settings
 
-This separate track trains a bridge-level graph model from a Neo4j database. It needs a running Neo4j instance at `bolt://localhost:7687` and these extra packages:
+The static graph model and the Streamlit dashboard read their settings from a `.env` file in the repository root. Git ignores this file, so your credentials stay on your machine. Create it from the template, then fill in your own values:
 
 ```bash
-pip install neo4j rdflib rdflib-neo4j
+# Windows
+copy .env.example .env
+# macOS / Linux
+cp .env.example .env
+```
+
+| Setting | Used for |
+|---|---|
+| `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD` | Your Neo4j connection |
+| `GOOGLE_API_KEY` | The Gemini AI assistant in the Streamlit dashboard |
+
+### Static graph model
+
+This separate track trains a bridge-level graph model from a Neo4j database. It needs a running Neo4j instance, the `.env` file above, and these extra packages:
+
+```bash
+pip install neo4j rdflib rdflib-neo4j python-dotenv
 ```
 
 > **Warning:** the code under **Newer version w/ neo4j compatability** in `notebooks/ontologyBuilder.ipynb` runs `MATCH (n) DETACH DELETE n`, which deletes everything in the connected database. Use a dedicated Neo4j instance.
 
-1. Set your Neo4j connection details in `notebooks/ontologyBuilder.ipynb`, under both **Newer version w/ neo4j compatability** and **Data population**, and at the top of `scripts/no_torch.py`.
-2. Under **Data population**, set `csv_file_path = "../data/my_state_merged.csv"`, with Jupyter started from `notebooks/`.
-3. Run the cells under those two headings, in order.
-4. From the repository root, run:
+1. Start Jupyter from `notebooks/` and open `ontologyBuilder.ipynb`. If your merged file is not `data/my_state_merged.csv`, update `csv_file_path` under **Data population**.
+2. Run the cells under **Newer version w/ neo4j compatability** and **Data population**, in order.
+3. From the repository root, run:
 
    ```bash
    python scripts/no_torch.py
@@ -297,12 +301,33 @@ pip install neo4j rdflib rdflib-neo4j
 
 ### Streamlit dashboard
 
-`scripts/dashboard.py` is a separate app for exploring the Neo4j graph, with an AI assistant powered by Gemini. It does not show the forecasts. Replace the Neo4j and Gemini settings at the top of the file with your own, then run:
+`scripts/dashboard.py` is a separate app for exploring the Neo4j graph, with an AI assistant powered by Gemini. It does not show the forecasts. Create the `.env` file described above, then run:
 
 ```bash
-pip install streamlit pydeck plotly neo4j google-generativeai
+pip install streamlit pydeck plotly neo4j google-generativeai python-dotenv
 streamlit run scripts/dashboard.py
 ```
+
+## How the scores work
+
+**Forecast model.** A graph convolutional network combined with a GRU learns how element health changes from year to year, using a graph that links each bridge to its elements. It trains on the 2020→2021, 2021→2022, and 2022→2023 transitions and is tested on 2023→2024. Predicted HI can only stay level or fall, and each yearly drop is limited to 15%.
+
+**Climate-Traffic Impact Matrix (CTIM), 0–1.** Each hazard is scaled to an exposure `E` from 0 to 1, then combined with an expert-set vulnerability matrix `V` of element types and hazards:
+
+```
+element impact = sum(V[element, hazard] * E[hazard]^2) / sum(E[hazard])
+CTIM           = average element impact across the 8 element types
+```
+
+**Criticality score, 0–1.** Higher means more urgent:
+
+```
+criticality          = 0.45 * HI penalty + 0.35 * CTIM + 0.20 * network significance
+HI penalty           = 1 - HI / 100
+network significance = 0.5 * min(ADT / 120000, 1) + 0.3 * min(detour km / 100, 1) + 0.2 if on an essential route
+```
+
+The notebook currently leaves detour length at 0 and essential route off. The hazards, their value ranges, and the vulnerability matrix are defined in [notebooks/bridge_criticality_pipeline.py](notebooks/bridge_criticality_pipeline.py). The uncertainty notebook's updated pipeline uses different weights (40/40/20) and a 0–100 scale.
 
 ## Known limitations
 
@@ -322,14 +347,11 @@ These apply to `notebooks/forecasting_arranged.ipynb` and affect how you should 
 |---|---|
 | `FileNotFoundError` in the notebook | Start Jupyter from `notebooks/` and check `CSV_PATH` |
 | `ModuleNotFoundError: bridge_criticality_pipeline` | Start Jupyter from `notebooks/`, where the module is located |
-| `NameError: bridge_hazards_dict` | Run the cells in the order given in [Step 3](#step-3-run-the-forecast) |
-| `IndexError` in the section 8 plots | The first plot needs at least 501 element rows. Lower `.iloc[500]` or skip the plot |
-| `FileNotFoundError` from `prepare_dashboard_data.py` | Make the path edits in [Step 4](#step-4-build-the-dashboard-data) |
-| `ValueError` from `prepare_dashboard_data.py` | Your data has non-numeric bridge IDs, which this script does not support |
-| No bridges in `dashboard_data.json` | Check the latitude and longitude ranges on line 154 |
-| "Failed to load dashboard data" | Start the page with `python serve_dashboard.py` and confirm `dashboard_data.json` exists |
-| Blank page | Check your internet connection. The map and chart libraries load from the web |
-| Port 8000 is already in use (on Windows, `WinError 10048`) | Run `python -m http.server 8001`, then open `http://localhost:8001/bridge_criticality_interactive_dashboard.html` |
+| `FileNotFoundError` from `prepare_dashboard_data.py` | Run the notebook first. If your merged file has a different name, use `--input` as shown in [Step 4](#step-4-build-the-dashboard-data) |
+| No bridges in `dashboard_data.json` | Confirm the latitude and longitude columns are filled in, and that the merged CSV is the one you ran the notebook on |
+| "Failed to load dashboard data" | Start the page with `python serve_dashboard.py`, confirm `dashboard_data.json` exists, and check your internet connection |
+| Port 8000 is already in use | Run `python -m http.server 8001 --bind 127.0.0.1`, then open `http://localhost:8001/bridge_criticality_interactive_dashboard.html` |
+| `KeyError: 'NEO4J_PASSWORD'` | Create the `.env` file described in [Neo4j and Gemini settings](#neo4j-and-gemini-settings) |
 | Out of memory during training | See [Memory](#memory) |
 
 ## Repository layout
@@ -345,16 +367,9 @@ These apply to `notebooks/forecasting_arranged.ipynb` and affect how you should 
 | `prepare_dashboard_data.py` | Builds `dashboard_data.json` |
 | `serve_dashboard.py` | Serves the dashboard locally |
 | `bridge_criticality_interactive_dashboard.html` | The dashboard page |
-
-## Other documentation
-
-These guides were written for an earlier version of the dashboard. Where they differ from this README, follow this README.
-
-- [CRITICALITY_DASHBOARD_README.md](CRITICALITY_DASHBOARD_README.md): background on the health index, the Climate-Traffic Impact Matrix (CTIM), and the criticality score. Its chart descriptions, file locations, and model accuracy figures are out of date.
-- [DASHBOARD_SETUP.md](DASHBOARD_SETUP.md): older setup and troubleshooting notes. The CSV upload option it describes no longer exists, and the dashboard now loads `dashboard_data.json`.
+| `.env.example` | Template for your Neo4j and Gemini settings |
 
 ## Resources
 
 - [Literature review progress](https://docs.google.com/spreadsheets/d/1FBF4gexEheqrDxaIwI9gxIBC1Uaw7EUmpFTdzaxkVrw/edit?usp=sharing): reviewed papers, key findings, and connections to this project.
 - [FHWA Bridge Management Guide (PDF)](https://www.fhwa.dot.gov/bridge/mtguide.pdf): U.S. Federal Highway Administration manual on bridge management practices.
-- [OU SharePoint folder](https://sooners-my.sharepoint.com/:f:/g/personal/asare_ou_edu/EngYxZUOt91DrwwzmfVf-MkB60QK_hNiGWCroPMJtDd-IA?email=asare%40ou.edu&e=L4nR1v): the research team's working files. You don't need these to run AutoDM.
