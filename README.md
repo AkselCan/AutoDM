@@ -376,7 +376,6 @@ These apply to `notebooks/forecasting_arranged.ipynb` and affect how you should 
 
 ## Resources
 
-- [Literature review progress](https://docs.google.com/spreadsheets/d/1FBF4gexEheqrDxaIwI9gxIBC1Uaw7EUmpFTdzaxkVrw/edit?usp=sharing): reviewed papers, key findings, and connections to this project.
 - [FHWA Bridge Management Guide (PDF)](https://www.fhwa.dot.gov/bridge/mtguide.pdf): U.S. Federal Highway Administration manual on bridge management practices.
 
 ## Acknowledgments
